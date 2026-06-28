@@ -7,3 +7,4 @@ __pycache__
 mp.2019.04.01.json
 *.sqlite
 *.cif
+.vscode
