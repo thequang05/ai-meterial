@@ -1,0 +1,127 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="general-workflow" id="i_2uKY2fBlSGoFLUURJR">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="WI1wTOHgw1CVwDoGNVlG-1" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#cce5ff;strokeColor=#36393d;" value="&lt;div&gt;High Temperature Resistant Material&lt;/div&gt;Knowledge Graph&lt;div&gt;(Neo4j&#39;s database)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="140" width="210" x="600" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="OHyyYQtFNLaPzGzZviOv-4" edge="1" parent="1" source="-3HrK-61N62XqdzNc_aF-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="OHyyYQtFNLaPzGzZviOv-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="OHyyYQtFNLaPzGzZviOv-5" connectable="0" parent="OHyyYQtFNLaPzGzZviOv-4" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="properties" vertex="1">
+          <mxGeometry relative="1" x="-0.0435" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-3HrK-61N62XqdzNc_aF-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d0cee2;strokeColor=#56517e;" value="LLM&lt;div&gt;(LM Studio)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="160" x="345.5" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="-3HrK-61N62XqdzNc_aF-5" edge="1" parent="1" source="-3HrK-61N62XqdzNc_aF-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="-3HrK-61N62XqdzNc_aF-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="-3HrK-61N62XqdzNc_aF-3" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#d5e8d4;strokeColor=#82b366;" value="Start" vertex="1">
+          <mxGeometry height="80" width="80" x="385" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="-3HrK-61N62XqdzNc_aF-7" edge="1" parent="1" source="-3HrK-61N62XqdzNc_aF-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="-3HrK-61N62XqdzNc_aF-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="OHyyYQtFNLaPzGzZviOv-2" edge="1" parent="1" source="-3HrK-61N62XqdzNc_aF-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="-3HrK-61N62XqdzNc_aF-26">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="OHyyYQtFNLaPzGzZviOv-3" connectable="0" parent="OHyyYQtFNLaPzGzZviOv-2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="JSON format?" vertex="1">
+          <mxGeometry relative="1" x="-0.1014" y="2" as="geometry">
+            <mxPoint x="-2" y="19" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-3HrK-61N62XqdzNc_aF-21" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d0cee2;strokeColor=#56517e;" value="Relevant Known Materials Retrieval&lt;div&gt;(via MCP of graph database)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="70" width="225" x="313" y="475" as="geometry" />
+        </mxCell>
+        <mxCell id="-3HrK-61N62XqdzNc_aF-24" edge="1" parent="1" source="-3HrK-61N62XqdzNc_aF-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" target="WI1wTOHgw1CVwDoGNVlG-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="OHyyYQtFNLaPzGzZviOv-8" edge="1" parent="1" source="-3HrK-61N62XqdzNc_aF-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="OHyyYQtFNLaPzGzZviOv-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="-3HrK-61N62XqdzNc_aF-26" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;spacingLeft=10;spacingRight=10;fillColor=#fff2cc;strokeColor=#d6b656;" value="Relevant Known Materials&lt;div&gt;(e.g., material graph, fomula)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="232" x="309" y="677.5" as="geometry" />
+        </mxCell>
+        <mxCell id="-3HrK-61N62XqdzNc_aF-40" edge="1" parent="1" source="-3HrK-61N62XqdzNc_aF-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="-3HrK-61N62XqdzNc_aF-39">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="-3HrK-61N62XqdzNc_aF-36" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d0cee2;strokeColor=#56517e;" value="Scientific Filtering&lt;div&gt;(pretrained GNN validating the formation energy)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="70" width="200" x="325" y="947.5" as="geometry" />
+        </mxCell>
+        <mxCell id="-3HrK-61N62XqdzNc_aF-42" edge="1" parent="1" source="-3HrK-61N62XqdzNc_aF-39" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="-3HrK-61N62XqdzNc_aF-41">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="-3HrK-61N62XqdzNc_aF-39" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d0cee2;strokeColor=#56517e;" value="Ranking&lt;div&gt;(based on confidence score)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="160" x="345" y="1052.5" as="geometry" />
+        </mxCell>
+        <mxCell id="-3HrK-61N62XqdzNc_aF-44" edge="1" parent="1" source="-3HrK-61N62XqdzNc_aF-41" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="-3HrK-61N62XqdzNc_aF-43">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="-3HrK-61N62XqdzNc_aF-41" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;spacingLeft=10;spacingRight=10;fillColor=#fff2cc;strokeColor=#d6b656;" value="Proposed Materials" vertex="1">
+          <mxGeometry height="60" width="155" x="347.5" y="1152.5" as="geometry" />
+        </mxCell>
+        <mxCell id="-3HrK-61N62XqdzNc_aF-43" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#f8cecc;strokeColor=#b85450;" value="End" vertex="1">
+          <mxGeometry height="80" width="80" x="385" y="1252.5" as="geometry" />
+        </mxCell>
+        <mxCell id="-3HrK-61N62XqdzNc_aF-46" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=18;fontStyle=1;fontColor=#FF3333;" value="Relevant Known Materials Retrieval" vertex="1">
+          <mxGeometry height="30" width="395" x="20" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="-3HrK-61N62XqdzNc_aF-50" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=18;fontStyle=1;fontColor=#004C99;" value="Validation Stage" vertex="1">
+          <mxGeometry height="30" width="160" x="20" y="900" as="geometry" />
+        </mxCell>
+        <mxCell id="OHyyYQtFNLaPzGzZviOv-6" edge="1" parent="1" source="OHyyYQtFNLaPzGzZviOv-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="-3HrK-61N62XqdzNc_aF-21">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="OHyyYQtFNLaPzGzZviOv-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d0cee2;strokeColor=#56517e;" value="LLM parser&lt;div&gt;(structured retrieval)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="160" x="345.5" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="OHyyYQtFNLaPzGzZviOv-12" edge="1" parent="1" source="OHyyYQtFNLaPzGzZviOv-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="-3HrK-61N62XqdzNc_aF-36">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="OHyyYQtFNLaPzGzZviOv-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d0cee2;strokeColor=#56517e;" value="Generative Model&lt;div&gt;(Diffusion / VAE)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="160" x="345" y="787.5" as="geometry" />
+        </mxCell>
+        <mxCell id="OHyyYQtFNLaPzGzZviOv-11" edge="1" parent="1" source="OHyyYQtFNLaPzGzZviOv-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="OHyyYQtFNLaPzGzZviOv-7">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="709.5" y="817.5" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OHyyYQtFNLaPzGzZviOv-10" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;spacingLeft=10;spacingRight=10;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;div&gt;System Prompt&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="232" x="588.5" y="677.5" as="geometry" />
+        </mxCell>
+        <mxCell id="OHyyYQtFNLaPzGzZviOv-15" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;arcSize=6;" value="" vertex="1">
+          <mxGeometry height="500" width="810" x="20" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="OHyyYQtFNLaPzGzZviOv-14" edge="1" parent="1" source="OHyyYQtFNLaPzGzZviOv-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="-3HrK-61N62XqdzNc_aF-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="700" y="310" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OHyyYQtFNLaPzGzZviOv-13" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;spacingLeft=10;spacingRight=10;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;div&gt;System Prompt&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="232" x="589" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="-3HrK-61N62XqdzNc_aF-4" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;spacingLeft=10;spacingRight=10;fillColor=#fff2cc;strokeColor=#d6b656;" value="Material Properties Requirement Query&lt;div&gt;(e.g., a material that can withstand temperatures of &lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;1500 degrees Celsius&lt;/font&gt; and is &lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;non-conductive&lt;/font&gt;.)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="100" width="295" x="278" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="OHyyYQtFNLaPzGzZviOv-20" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;arcSize=6;" value="" vertex="1">
+          <mxGeometry height="200" width="810" x="20" y="930" as="geometry" />
+        </mxCell>
+        <mxCell id="-3HrK-61N62XqdzNc_aF-48" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=18;fontStyle=1;fontColor=#CC6600;" value="Generation Stage based on Context" vertex="1">
+          <mxGeometry height="30" width="320" x="20" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="OHyyYQtFNLaPzGzZviOv-16" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;arcSize=6;" value="" vertex="1">
+          <mxGeometry height="220" width="810" x="20" y="660" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
