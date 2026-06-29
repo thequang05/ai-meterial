@@ -299,7 +299,10 @@ def run_generation(
             scale=config.perturb_scale,
         ))
 
-    z = torch.stack(z_list[:config.n_samples]).to(device)
+    # Each z_list entry is [1, latent_dim] (encoder/perturb output), so cat along
+    # dim 0 to get [N_samples, latent_dim]. stack() would add a spurious middle
+    # dim → [N, 1, latent_dim], breaking the decoder's cat in decode_edges.
+    z = torch.cat(z_list[:config.n_samples], dim=0).to(device)
     print(f"\n  Decoding {z.size(0)} latent vectors ...")
 
     # Decode + GNN scoring.

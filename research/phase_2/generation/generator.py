@@ -137,7 +137,7 @@ def decode_and_validate(
 
     with torch.no_grad():
         for i, z_i in enumerate(z):
-            z_i = z_i.unsqueeze(0).to(device)  # [1, latent_dim]
+            z_i = z_i.reshape(1, -1).to(device)  # [1, latent_dim]
 
             # Encode the prototype to get per-node embeddings.
             if prototype_graphs:
@@ -153,24 +153,35 @@ def decode_and_validate(
                 )
 
             # ── Decode topology ──────────────────────────────────────────────
-            all_logits = model.decode_full_adjacency(z_i, node_embs, node_embs.size(0))
-            adj = (torch.sigmoid(all_logits) > edge_threshold).float()
-
-            # Build edge list from the adjacency matrix.
-            rows, cols = [], []
-            for r in range(adj.size(0)):
-                for c in range(r + 1, adj.size(1)):
-                    if adj[r, c] > 0.5:
-                        rows.append(r)
-                        cols.append(c)
-                        rows.append(c)
-                        cols.append(r)
-
-            if not rows:
-                continue
-
-            edge_index = torch.tensor([rows, cols], device=device)
-            edge_attr = torch.ones(edge_index.size(1), 1, device=device)
+            # The edge decoder is driven by the (normalized) bond length, so it
+            # cannot synthesize a connectivity from scratch: scoring an O(N²)
+            # adjacency with a single constant distance is all-or-nothing. When a
+            # prototype graph is available we instead score its *real* candidate
+            # edges (with their real bond lengths) and keep the ones the decoder
+            # confirms — z then drives novelty through the atom-type decoder below.
+            if ref is not None and ref.edge_index.numel() > 0:
+                cand_ei = ref.edge_index
+                cand_ea = ref.edge_attr if ref.edge_attr is not None else \
+                    torch.full((cand_ei.size(1), 1), float(model.edge_norm.shift),
+                               device=device)
+                logits = model.decode_edges(z_i, node_embs, cand_ei, cand_ea)
+                keep = torch.sigmoid(logits) > edge_threshold
+                if int(keep.sum()) == 0:
+                    continue
+                edge_index = cand_ei[:, keep]
+                edge_attr = cand_ea[keep]
+            else:
+                # No prototype topology: fall back to full-adjacency scoring, but
+                # feed the learned mean bond length so the decoder is in-distribution.
+                all_logits = model.decode_full_adjacency(z_i, node_embs, node_embs.size(0))
+                adj = (torch.sigmoid(all_logits) > edge_threshold).float()
+                idx = (torch.triu(adj, diagonal=1) > 0.5).nonzero(as_tuple=False)
+                if idx.numel() == 0:
+                    continue
+                ud = idx.t()
+                edge_index = torch.cat([ud, ud.flip(0)], dim=1)
+                edge_attr = torch.full((edge_index.size(1), 1),
+                                       float(model.edge_norm.shift), device=device)
 
             # ── Decode atom types ─────────────────────────────────────────────
             node_logits = model.decode_nodes(z_i, node_embs)
@@ -259,7 +270,7 @@ def generate(
     latent_means: list = []
 
     # ── Encode prototype materials (from graph dataset) ───────────────────
-    if args.prototype_uids:
+    if args.uids:
         graphs_all = torch.load(GRAPH_PATH, weights_only=False)
         uid_to_graph = {}
         for g in graphs_all:
@@ -267,7 +278,7 @@ def generate(
                 uid_to_graph[g.material_uid] = g
 
         with torch.no_grad():
-            for uid in args.prototype_uids:
+            for uid in args.uids:
                 if uid in uid_to_graph:
                     g = uid_to_graph[uid].to(device)
                     mu, _ = vae_model.encode(g)

@@ -5,3 +5,7 @@ __pycache__
 *.csv
 *.pt
 mp.2019.04.01.json
+.vscode
+.DS_Store
+*.cif
+*.sqlite

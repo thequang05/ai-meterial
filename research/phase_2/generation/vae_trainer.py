@@ -30,8 +30,9 @@ import torch
 import torch.nn as nn
 from torch_geometric.loader import DataLoader as PYGDataLoader
 
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-MODEL_DIR = _PROJECT_ROOT / "research" / "phase_2" / "models"
+# This file lives in research/phase_2/generation/, so models/ is one level up.
+_PHASE2_DIR = Path(__file__).resolve().parent.parent
+MODEL_DIR = _PHASE2_DIR / "models"
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 CHECKPOINT_PATH = MODEL_DIR / "vae_model.pt"
 
@@ -216,7 +217,7 @@ def main() -> None:
     parser.add_argument("--max-nodes", type=int, default=64)
     parser.add_argument("--max-edges", type=int, default=256)
     parser.add_argument("--resume", type=str, default=None)
-    parser.add_argument("--save-every", type=int, default=10)
+    parser.add_argument("--save-every", type=int, default=5)
     parser.add_argument("--energy-min", type=float, default=None)
     parser.add_argument("--energy-max", type=float, default=None)
     global args
@@ -323,21 +324,22 @@ def main() -> None:
         if is_best:
             best_val_loss = val_metrics["loss"]
 
-        if epoch % args.save_every == 0 or is_best:
-            ckpt_name = f"vae_best.pt" if is_best else f"vae_epoch{epoch}.pt"
-            torch.save(
-                {
-                    "epoch": epoch,
-                    "model": model.state_dict(),
-                    "optimizer": optimizer.state_dict(),
-                    "scheduler": scheduler.state_dict(),
-                    "best_val_loss": best_val_loss,
-                    "args": vars(args),
-                },
-                MODEL_DIR / ckpt_name,
-            )
+        if is_best or epoch % args.save_every == 0:
+            ckpt = {
+                "epoch": epoch,
+                "model": model.state_dict(),
+                "optimizer": optimizer.state_dict(),
+                "scheduler": scheduler.state_dict(),
+                "best_val_loss": best_val_loss,
+                "args": vars(args),
+            }
+            # Best model goes to the canonical path consumed by generator.py / main.py.
             if is_best:
-                print(f"  --> Best model saved (val_loss={best_val_loss:.4f})")
+                torch.save(ckpt, CHECKPOINT_PATH)
+                print(f"  --> Best model saved to {CHECKPOINT_PATH} (val_loss={best_val_loss:.4f})")
+            # Periodic snapshot for resuming / inspection.
+            if epoch % args.save_every == 0:
+                torch.save(ckpt, MODEL_DIR / f"vae_epoch{epoch}.pt")
 
     print(f"\nTraining done. Best val_loss={best_val_loss:.4f}")
 

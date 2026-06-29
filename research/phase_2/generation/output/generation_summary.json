@@ -1,59 +1,79 @@
 {
-  "requirement": "material that can withstand 1500C and is non-conductive",
+  "requirement": "stable oxide with low formation energy",
   "phase": "generation",
   "n_retrieved": 10,
-  "n_generated": 3,
-  "n_validated": 3,
-  "target_energy": -1.5,
-  "include_elements": [
-    "O"
-  ],
+  "n_generated": 10,
+  "n_validated": 10,
+  "target_energy": null,
+  "include_elements": null,
   "only_elements": null,
   "retrieval_stats": {
-    "count": 65173,
+    "count": 133420,
     "min": -4.612092007715515,
-    "max": 4.14457699725,
-    "mean": -2.2003823911628264,
-    "p05": -3.3549790521357146,
-    "p25": -2.7050077540625,
-    "median": -2.2961284983149994,
-    "p75": -1.7507694508928568,
-    "p95": -0.7920757823625013
+    "max": 5.367633211875001,
+    "mean": -1.3850428030938995,
+    "p05": -3.19661826635911,
+    "p25": -2.3944412021897645,
+    "median": -1.3879226742466302,
+    "p75": -0.42479171038194424,
+    "p95": 0.207703482000185
   },
   "top_candidates": [
     {
-      "candidate_id": "bucket_4476c7",
-      "formula": "(interpolated CdGeO3 ↔ MgCoO3)",
-      "prototype_uid": "MP_mp-1016903",
-      "prototype_formula": "CdGeO3",
-      "num_atoms": 5,
-      "num_edges": 250,
-      "gnn_formation_energy": -1.48599874175,
-      "generation_method": "bucket_interpolation",
-      "latent_alpha": 0.5
+      "candidate_id": "cand_6ac0ccdb",
+      "formula": "F24Th6",
+      "prototype_uid": "MP_mp-1173034",
+      "prototype_formula": "La2Th8O19",
+      "num_atoms": 30,
+      "num_edges": 968,
+      "gnn_formation_energy": -4.4732,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 0.211
     },
     {
-      "candidate_id": "bucket_56495d",
-      "formula": "(interpolated RbMgO3 ↔ YbCdO3)",
-      "prototype_uid": "MP_mp-1186884",
-      "prototype_formula": "RbMgO3",
-      "num_atoms": 5,
-      "num_edges": 154,
-      "gnn_formation_energy": -1.4751351982844831,
-      "generation_method": "bucket_interpolation",
-      "latent_alpha": 0.5
+      "candidate_id": "cand_0c0aad89",
+      "formula": "F24Th6",
+      "prototype_uid": "MP_mp-1100894",
+      "prototype_formula": "Y2Th8O19",
+      "num_atoms": 30,
+      "num_edges": 968,
+      "gnn_formation_energy": -4.4732,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 0.737
     },
     {
-      "candidate_id": "bucket_321d32",
-      "formula": "(interpolated Cr2NiO4 ↔ Ni2GeO4)",
-      "prototype_uid": "MP_mp-19303",
-      "prototype_formula": "Cr2NiO4",
-      "num_atoms": 14,
-      "num_edges": 640,
-      "gnn_formation_energy": -1.646422670357143,
-      "generation_method": "bucket_interpolation",
-      "latent_alpha": 0.5
+      "candidate_id": "cand_588321c4",
+      "formula": "F12Er4",
+      "prototype_uid": "MP_mp-676629",
+      "prototype_formula": "Sm2Th8O19",
+      "num_atoms": 16,
+      "num_edges": 712,
+      "gnn_formation_energy": -4.4486,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 0.368
+    },
+    {
+      "candidate_id": "cand_40bba950",
+      "formula": "F12Er4",
+      "prototype_uid": "MP_mp-1173030",
+      "prototype_formula": "Y2Th8O19",
+      "num_atoms": 16,
+      "num_edges": 712,
+      "gnn_formation_energy": -4.4486,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 0.895
+    },
+    {
+      "candidate_id": "cand_80532212",
+      "formula": "F12Tb4",
+      "prototype_uid": "MP_mp-31034",
+      "prototype_formula": "ThF4",
+      "num_atoms": 16,
+      "num_edges": 672,
+      "gnn_formation_energy": -4.4479,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 0.474
     }
   ],
-  "elapsed_seconds": 6.6
+  "elapsed_seconds": 112.4
 }

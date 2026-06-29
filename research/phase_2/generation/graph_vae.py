@@ -273,7 +273,11 @@ class GraphVAE(nn.Module):
             return all_logits
 
         edge_index = torch.tensor([rows, cols], device=device)
-        dummy_attr = torch.ones(len(rows), 1, device=device)
+        # Feed the learned mean bond length (not 1.0 Å, which is far off-distribution
+        # for EdgeAttrNorm and forces every logit to the clamp floor → zero edges).
+        dummy_attr = torch.full(
+            (len(rows), 1), float(self.edge_norm.shift), device=device
+        )
 
         logits = self.decode_edges(z, node_embs, edge_index, dummy_attr)
         all_logits[rows, cols] = logits
