@@ -42,12 +42,14 @@ class PrepareQEJobsTests(unittest.TestCase):
                     "candidate_id": "tic",
                     "formula": "TiC",
                     "relaxed_cif": str(first_path),
+                    "relaxed_cif_sha256": _hash(first_path),
                 },
                 {
                     "rank": 2,
                     "candidate_id": "zrc",
                     "formula": "ZrC",
                     "relaxed_cif": str(second_path),
+                    "relaxed_cif_sha256": _hash(second_path),
                 },
             ],
         })
@@ -97,8 +99,113 @@ class PrepareQEJobsTests(unittest.TestCase):
                 rows = list(csv.DictReader(handle))
             self.assertEqual(len(rows), 2)
             self.assertTrue(all(row["job_status"] == "planned_waiting_for_pseudopotentials" for row in rows))
+            self.assertTrue(all(row["qe_scratch_outdir"] == "./tmp" for row in rows))
+            self.assertIsNone(result["scratch_root"])
 
-    def test_verified_pseudos_emit_inputs_without_running(self):
+    def test_tracked_wc_candidate_bundle_is_complete_and_hash_verified(self):
+        phase2 = Path(__file__).resolve().parents[1]
+        report = phase2 / "reports/w_c_structural_validation_v1.json"
+        config = Path(__file__).resolve().parent / "qe_dft_config_v1.json"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            result = prepare_jobs(
+                validation_report_path=report,
+                config_path=config,
+                output_dir=Path(temp_dir) / "source_queue",
+                top_n=5,
+                convergence_source_only=True,
+            )
+
+        self.assertEqual(result["candidate_count"], 5)
+        self.assertEqual(
+            result["required_elements"], ["C", "Ti", "V", "Zr", "Nb", "Ta", "W"]
+        )
+
+    def test_report_relative_cif_paths_resolve_from_report_directory(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            report, config = self._fixtures(root)
+            payload = json.loads(report.read_text(encoding="utf-8"))
+            for row in payload["recommended_dft_queue"]:
+                row["relaxed_cif"] = Path(row["relaxed_cif"]).name
+            report.write_text(json.dumps(payload), encoding="utf-8")
+
+            result = prepare_jobs(
+                validation_report_path=report,
+                config_path=config,
+                output_dir=root / "relative_report_campaign",
+                top_n=2,
+            )
+
+            self.assertEqual(result["candidate_count"], 2)
+            self.assertEqual(result["required_elements"], ["C", "Ti", "Zr"])
+
+    def test_relaxed_cif_hash_mismatch_is_rejected_before_input_generation(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            report, config = self._fixtures(root)
+            payload = json.loads(report.read_text(encoding="utf-8"))
+            first_cif = Path(payload["recommended_dft_queue"][0]["relaxed_cif"])
+            first_cif.write_text(first_cif.read_text() + "# tampered\n")
+
+            with self.assertRaisesRegex(ValueError, "CIF SHA-256 mismatch"):
+                prepare_jobs(
+                    validation_report_path=report,
+                    config_path=config,
+                    output_dir=root / "tampered_campaign",
+                    top_n=1,
+                )
+
+    def test_explicit_scratch_is_campaign_isolated_and_audited(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            report, config = self._fixtures(root)
+            scratch_root = root / "qe_scratch"
+            prepared: list[tuple[dict, dict[str, str]]] = []
+            for campaign_name in ("campaign_a", "campaign_b"):
+                result = prepare_jobs(
+                    validation_report_path=report,
+                    config_path=config,
+                    output_dir=root / campaign_name,
+                    top_n=1,
+                    pw_executable="definitely_missing_pw.x",
+                    scratch_root=scratch_root,
+                )
+                with Path(result["queue_manifest"]).open(
+                    newline="", encoding="utf-8"
+                ) as handle:
+                    prepared.append((result, next(csv.DictReader(handle))))
+
+            first_result, first_row = prepared[0]
+            second_result, second_row = prepared[1]
+            first_outdir = Path(first_row["qe_scratch_outdir"])
+            second_outdir = Path(second_row["qe_scratch_outdir"])
+            self.assertNotEqual(first_outdir, second_outdir)
+            self.assertTrue(first_outdir.is_dir())
+            self.assertTrue(second_outdir.is_dir())
+            self.assertEqual(Path(first_result["scratch_root"]), scratch_root.resolve())
+            self.assertNotEqual(
+                first_result["scratch_campaign_namespace"],
+                second_result["scratch_campaign_namespace"],
+            )
+            self.assertTrue(first_outdir.is_relative_to(scratch_root.resolve()))
+            self.assertTrue(second_outdir.is_relative_to(scratch_root.resolve()))
+
+    def test_nonempty_output_directory_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            report, config = self._fixtures(root)
+            output = root / "partial_campaign"
+            output.mkdir()
+            (output / "stale.txt").write_text("stale", encoding="utf-8")
+            with self.assertRaisesRegex(FileExistsError, "non-empty output directory"):
+                prepare_jobs(
+                    validation_report_path=report,
+                    config_path=config,
+                    output_dir=output,
+                    top_n=1,
+                )
+
+    def test_verified_pseudos_require_convergence_certificate(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             report, config = self._fixtures(root)
@@ -144,17 +251,15 @@ class PrepareQEJobsTests(unittest.TestCase):
                 pw_executable="/usr/bin/true",
             )
 
-            self.assertEqual(result["status"], "runnable_not_started")
+            self.assertEqual(
+                result["status"], "blocked_missing_convergence_certificate"
+            )
             self.assertEqual(result["global_ecutwfc_ry"], 60)
             self.assertEqual(result["global_ecutrho_ry"], 480)
             self.assertFalse(result["calculation_started"])
             inputs = sorted(output.glob("jobs/*/vc-relax.in"))
-            self.assertEqual(len(inputs), 2)
-            text = inputs[0].read_text(encoding="utf-8")
-            self.assertIn("calculation = 'vc-relax'", text)
-            self.assertIn("ecutwfc = 60.0", text)
-            self.assertIn("ecutrho = 480.0", text)
-            self.assertIn("K_POINTS automatic", text)
+            self.assertEqual(inputs, [])
+            self.assertFalse(result["production_settings_certified"])
             self.assertEqual(len(list((output / "pseudos").glob("*.UPF"))), 3)
 
     def test_handwritten_manifest_cannot_unlock_qe_inputs(self):

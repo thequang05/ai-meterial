@@ -8,7 +8,12 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from compute_qe_hull import RY_TO_EV, _subsystem_keys, compute_hulls
+from compute_qe_hull import (
+    RY_TO_EV,
+    _energy_records_sha256,
+    _subsystem_keys,
+    compute_hulls,
+)
 
 
 SETTINGS_HASH = "a" * 64
@@ -18,6 +23,8 @@ EXECUTABLE_SHA = "d" * 64
 RAW_SHA = "e" * 64
 ID_SHA = "f" * 64
 AUDIT_SHA = "1" * 64
+CERTIFICATE_PAYLOAD_SHA = "2" * 64
+CERTIFICATE_FILE_SHA = "3" * 64
 
 
 def _sha(path: Path) -> str:
@@ -41,6 +48,7 @@ def _write_entries(path: Path, rows: list[dict]) -> None:
         "energy_ev_per_atom", "static_gate_status", "static_settings_hash",
         "source_cif_sha256", "relaxed_cif_sha256", "qe_input_sha256",
         "qe_output_sha256", "pw_executable_sha256", "entry_lineage_sha256",
+        "convergence_certificate_payload_sha256",
     ]
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields)
@@ -79,6 +87,7 @@ def _entry(
         "qe_input_sha256": input_sha,
         "qe_output_sha256": output_sha,
         "static_settings_hash": SETTINGS_HASH,
+        "convergence_certificate_payload_sha256": CERTIFICATE_PAYLOAD_SHA,
         "pw_executable_sha256": EXECUTABLE_SHA,
         "total_energy_ry": total_energy_ry,
     }, sort_keys=True).encode("utf-8")).hexdigest()
@@ -101,6 +110,7 @@ def _entry(
         "qe_output_sha256": output_sha,
         "pw_executable_sha256": EXECUTABLE_SHA,
         "entry_lineage_sha256": lineage,
+        "convergence_certificate_payload_sha256": CERTIFICATE_PAYLOAD_SHA,
     }
 
 
@@ -108,8 +118,11 @@ def _write_summary(path: Path, entries: Path) -> None:
     path.write_text(json.dumps({
         "collector_version": "qe_static_collector_v1",
         "results_manifest_sha256": _sha(entries),
-        "energy_records_sha256": _digest(f"records:{entries.name}"),
+        "energy_records_sha256": _energy_records_sha256(entries),
         "static_settings_hash": SETTINGS_HASH,
+        "convergence_certificate": "/synthetic/qe_convergence_certificate.json",
+        "convergence_certificate_sha256": CERTIFICATE_FILE_SHA,
+        "convergence_certificate_payload_sha256": CERTIFICATE_PAYLOAD_SHA,
     }), encoding="utf-8")
 
 
@@ -276,16 +289,24 @@ class ComputeQEHullTests(unittest.TestCase):
         }
 
     def _compute(self, root: Path, files: dict[str, Path], **kwargs):
-        return compute_hulls(
-            candidate_entries_path=files["candidates"],
-            candidate_summary_path=files["candidate_summary"],
-            reference_entries_path=files["references"],
-            reference_summary_path=files["reference_summary"],
-            reference_inventory_path=files["inventory"],
-            coverage_manifest_path=files["coverage"],
-            output_dir=root / "out",
-            **kwargs,
-        )
+        with patch(
+            "compute_qe_hull.verify_convergence_certificate",
+            return_value={
+                "certificate_path": "/synthetic/qe_convergence_certificate.json",
+                "certificate_sha256": CERTIFICATE_FILE_SHA,
+                "certificate_payload_sha256": CERTIFICATE_PAYLOAD_SHA,
+            },
+        ):
+            return compute_hulls(
+                candidate_entries_path=files["candidates"],
+                candidate_summary_path=files["candidate_summary"],
+                reference_entries_path=files["references"],
+                reference_summary_path=files["reference_summary"],
+                reference_inventory_path=files["inventory"],
+                coverage_manifest_path=files["coverage"],
+                output_dir=root / "out",
+                **kwargs,
+            )
 
     def test_complete_binary_inventory_emits_official_hull_value(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -320,6 +341,30 @@ class ComputeQEHullTests(unittest.TestCase):
                     root, self._files(root),
                     near_hull_threshold_ev_per_atom=float("inf"),
                 )
+
+    def test_tampered_energy_records_digest_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            files = self._files(root)
+            summary = json.loads(
+                files["candidate_summary"].read_text(encoding="utf-8")
+            )
+            summary["energy_records_sha256"] = "0" * 64
+            files["candidate_summary"].write_text(
+                json.dumps(summary), encoding="utf-8"
+            )
+            with self.assertRaisesRegex(ValueError, "canonical records"):
+                self._compute(root, files)
+
+    def test_tampered_energy_csv_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            files = self._files(root)
+            files["candidates"].write_bytes(
+                files["candidates"].read_bytes() + b"\n"
+            )
+            with self.assertRaisesRegex(ValueError, "CSV no longer matches"):
+                self._compute(root, files)
 
     def test_minimal_self_declared_snapshot_cannot_unlock_hull(self):
         with tempfile.TemporaryDirectory() as temp_dir:

@@ -32,10 +32,11 @@ class PrepareSSSPManifestTests(unittest.TestCase):
                 }
             }), encoding="utf-8")
 
+            manifest_path = root / "manifest.json"
             result = create_manifest(
                 metadata_path=metadata,
                 pseudo_dir=pseudo_dir,
-                output_path=root / "manifest.json",
+                output_path=manifest_path,
                 library_name="test",
                 library_version="1",
                 elements=["C"],
@@ -46,6 +47,17 @@ class PrepareSSSPManifestTests(unittest.TestCase):
             self.assertEqual(result["elements"]["C"]["ecutrho_ry"], 360)
             self.assertEqual(len(result["elements"]["C"]["sha256"]), 64)
             self.assertEqual(result["elements"]["C"]["upf_header_functional"], "PBE")
+
+            with self.assertRaisesRegex(FileExistsError, "Refusing to overwrite"):
+                create_manifest(
+                    metadata_path=metadata,
+                    pseudo_dir=pseudo_dir,
+                    output_path=manifest_path,
+                    library_name="test",
+                    library_version="1",
+                    elements=["C"],
+                    acknowledge_original_licenses=True,
+                )
 
     def test_rejects_missing_official_md5(self):
         with tempfile.TemporaryDirectory() as temp_dir:

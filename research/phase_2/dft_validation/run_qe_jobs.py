@@ -10,6 +10,7 @@ import argparse
 import csv
 import hashlib
 import json
+import math
 import os
 import signal
 import shutil
@@ -19,9 +20,16 @@ from pathlib import Path
 from typing import Any
 
 from qe_output import summarize_qe_output
+from qe_convergence_certificate import verify_convergence_certificate
+from qe_execution_provenance import (
+    execution_identity,
+    require_same_execution_provenance,
+    validate_execution_provenance,
+)
 
 
 RUNNER_VERSION = "qe_sequential_runner_v1"
+GIB = 1024 ** 3
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -85,6 +93,185 @@ def _provenance_blockers(
     return blockers
 
 
+def _required_absolute_path(value: Any, *, label: str) -> Path:
+    """Resolve one recorded artifact path without accepting CWD-relative input."""
+
+    text = str(value or "").strip()
+    if not text:
+        raise ValueError(f"QE queue path is missing: {label}")
+    path = Path(text).expanduser()
+    if not path.is_absolute():
+        raise ValueError(f"QE queue path must be absolute: {label}={text!r}")
+    return path.resolve()
+
+
+def _validated_queue_manifest_path(
+    *, preflight_path: Path, recorded_path: Any,
+) -> Path:
+    """Return the queue only when it is beside the selected preflight."""
+
+    campaign_dir = Path(preflight_path).resolve().parent
+    queue_path = _required_absolute_path(
+        recorded_path, label="preflight.queue_manifest"
+    )
+    if queue_path.parent != campaign_dir:
+        raise ValueError(
+            "QE queue manifest must be a direct child of its preflight campaign: "
+            f"queue={queue_path}, campaign={campaign_dir}"
+        )
+    return queue_path
+
+
+def _validate_queue_path_containment(
+    *,
+    preflight_path: Path,
+    preflight: dict[str, Any],
+    queue_path: Path,
+    queue: list[dict[str, str]],
+) -> None:
+    """Reject a queue that could read/write outside its prepared namespaces.
+
+    A queue is hash-bound by its preflight, but the preflight itself is an
+    operator-supplied artifact rather than a signed trust anchor.  Containment
+    therefore remains mandatory even when all recorded hashes match.
+    """
+
+    campaign_dir = Path(preflight_path).resolve().parent
+    expected_queue_path = _validated_queue_manifest_path(
+        preflight_path=preflight_path,
+        recorded_path=preflight.get("queue_manifest"),
+    )
+    if Path(queue_path).resolve() != expected_queue_path:
+        raise ValueError("Loaded QE queue differs from its preflight path")
+
+    jobs_root = (campaign_dir / "jobs").resolve()
+    if jobs_root.parent != campaign_dir or not jobs_root.is_dir():
+        raise ValueError(f"QE campaign jobs directory is missing: {jobs_root}")
+
+    scratch_root_raw = preflight.get("scratch_root")
+    scratch_namespace_raw = preflight.get("scratch_campaign_namespace")
+    scratch_campaign_raw = preflight.get("scratch_campaign_dir")
+    explicit_scratch_values = (
+        scratch_root_raw,
+        scratch_namespace_raw,
+        scratch_campaign_raw,
+    )
+    has_explicit_scratch = any(value not in (None, "") for value in explicit_scratch_values)
+    if has_explicit_scratch:
+        if any(value in (None, "") for value in explicit_scratch_values):
+            raise ValueError(
+                "QE preflight has an incomplete explicit scratch namespace"
+            )
+        scratch_root = _required_absolute_path(
+            scratch_root_raw, label="preflight.scratch_root"
+        )
+        namespace = Path(str(scratch_namespace_raw))
+        if (
+            namespace.is_absolute()
+            or len(namespace.parts) != 2
+            or any(part in {"", ".", ".."} for part in namespace.parts)
+        ):
+            raise ValueError(
+                "QE preflight scratch campaign namespace is invalid: "
+                f"{scratch_namespace_raw!r}"
+            )
+        scratch_campaign_dir = _required_absolute_path(
+            scratch_campaign_raw, label="preflight.scratch_campaign_dir"
+        )
+        expected_scratch_campaign = (scratch_root / namespace).resolve()
+        if (
+            scratch_campaign_dir != expected_scratch_campaign
+            or not scratch_campaign_dir.is_relative_to(scratch_root)
+            or not scratch_campaign_dir.is_dir()
+        ):
+            raise ValueError(
+                "QE preflight scratch campaign is outside or differs from its "
+                "declared root/namespace"
+            )
+    else:
+        scratch_root = None
+        scratch_campaign_dir = None
+
+    seen_job_dirs: set[Path] = set()
+    seen_artifact_paths: set[Path] = set()
+    seen_scratch_dirs: set[Path] = set()
+    for index, row in enumerate(queue, start=1):
+        row_label = str(row.get("candidate_id") or f"row_{index}")
+        input_path = _required_absolute_path(
+            row.get("qe_input"), label=f"{row_label}.qe_input"
+        )
+        job_dir = input_path.parent
+        if job_dir.parent != jobs_root:
+            raise ValueError(
+                "QE input/job directory escaped the campaign jobs directory: "
+                f"{row_label}:{input_path}"
+            )
+        if job_dir in seen_job_dirs:
+            raise ValueError(f"QE queue reuses a job directory: {job_dir}")
+        seen_job_dirs.add(job_dir)
+
+        output_path = _required_absolute_path(
+            row.get("qe_output"), label=f"{row_label}.qe_output"
+        )
+        record_path = _required_absolute_path(
+            row.get("run_record"), label=f"{row_label}.run_record"
+        )
+        if output_path.parent != job_dir or record_path.parent != job_dir:
+            raise ValueError(
+                "QE output/run record escaped its prepared job directory: "
+                f"{row_label}"
+            )
+        artifacts = (input_path, output_path, record_path)
+        if len(set(artifacts)) != len(artifacts):
+            raise ValueError(f"QE job artifact paths overlap: {row_label}")
+        for artifact in artifacts:
+            if artifact in seen_artifact_paths:
+                raise ValueError(f"QE queue reuses an artifact path: {artifact}")
+            seen_artifact_paths.add(artifact)
+
+        scratch_text = str(row.get("qe_scratch_outdir") or "").strip()
+        if not scratch_text:
+            raise ValueError(f"QE scratch path is missing: {row_label}")
+        scratch_path = Path(scratch_text).expanduser()
+        if scratch_campaign_dir is None:
+            if scratch_path.is_absolute():
+                raise ValueError(
+                    "Job-local QE scratch must be relative: "
+                    f"{row_label}:{scratch_text!r}"
+                )
+            resolved_scratch = (job_dir / scratch_path).resolve()
+            expected_local_scratch = (job_dir / "tmp").resolve()
+            if (
+                resolved_scratch != expected_local_scratch
+                or not resolved_scratch.is_relative_to(job_dir)
+            ):
+                raise ValueError(
+                    "Job-local QE scratch must resolve to the job's ./tmp: "
+                    f"{row_label}:{scratch_text!r}"
+                )
+        else:
+            if not scratch_path.is_absolute():
+                raise ValueError(
+                    "Explicit campaign QE scratch must be absolute: "
+                    f"{row_label}:{scratch_text!r}"
+                )
+            resolved_scratch = scratch_path.resolve()
+            if (
+                resolved_scratch.parent != scratch_campaign_dir
+                or not resolved_scratch.is_relative_to(scratch_campaign_dir)
+                or not resolved_scratch.is_dir()
+            ):
+                raise ValueError(
+                    "QE scratch directory escaped or differs from its prepared "
+                    f"campaign namespace: {row_label}:{resolved_scratch}"
+                )
+        if resolved_scratch in seen_scratch_dirs:
+            raise ValueError(
+                f"QE queue reuses a scratch directory: {resolved_scratch}"
+            )
+        seen_scratch_dirs.add(resolved_scratch)
+
+
 def _settings_hash_from_preflight(preflight: dict[str, Any]) -> str:
     return str(
         preflight.get("convergence_settings_hash")
@@ -104,6 +291,7 @@ def _completed_record_matches(
     queue_manifest_sha256: str,
     preflight_settings_hash: str,
     pw_executable_sha256: str,
+    execution_provenance: dict[str, Any],
 ) -> tuple[bool, dict[str, Any] | None]:
     if not record_path.is_file() or not output_path.is_file():
         return False, None
@@ -127,6 +315,13 @@ def _completed_record_matches(
         record.get("preflight_settings_hash") == preflight_settings_hash,
         record.get("pw_executable_sha256") == pw_executable_sha256,
     ]
+    try:
+        checks.append(
+            execution_identity(record.get("execution_provenance"))
+            == execution_identity(execution_provenance)
+        )
+    except ValueError:
+        checks.append(False)
     return all(checks), record
 
 
@@ -140,6 +335,151 @@ def _resolve_executable(value: str) -> str:
     if resolved:
         return resolved
     raise FileNotFoundError(f"Executable not found: {value}")
+
+
+def _nearest_existing_ancestor(path: Path) -> Path:
+    """Return ``path`` or its closest existing parent for filesystem checks."""
+
+    current = Path(path).expanduser().resolve()
+    while not current.exists():
+        parent = current.parent
+        if parent == current:
+            raise FileNotFoundError(
+                f"No existing ancestor is available for disk check: {path}"
+            )
+        current = parent
+    return current
+
+
+def _disk_space_observation(
+    *, label: str, requested_path: Path, minimum_free_bytes: int,
+) -> dict[str, Any]:
+    """Measure one target filesystem and return a serializable fail-closed result."""
+
+    requested = Path(requested_path).expanduser().resolve()
+    observation: dict[str, Any] = {
+        "label": label,
+        "requested_path": str(requested),
+        "minimum_free_bytes": minimum_free_bytes,
+        "minimum_free_gib": minimum_free_bytes / GIB,
+        "sufficient": False,
+    }
+    try:
+        checked = _nearest_existing_ancestor(requested)
+        usage = shutil.disk_usage(checked)
+        observation.update({
+            "checked_path": str(checked),
+            "filesystem_device_id": int(checked.stat().st_dev),
+            "total_bytes": int(usage.total),
+            "used_bytes": int(usage.used),
+            "free_bytes": int(usage.free),
+            "free_gib": float(usage.free / GIB),
+            "sufficient": int(usage.free) >= minimum_free_bytes,
+            "check_error": None,
+        })
+    except (OSError, ValueError) as exc:
+        observation["check_error"] = f"{type(exc).__name__}: {exc}"
+    return observation
+
+
+def _disk_space_gate(
+    *, job_dir: Path, qe_scratch_outdir: str, min_free_gib: float,
+) -> dict[str, Any]:
+    """Check both the job and QE scratch filesystems immediately before launch."""
+
+    minimum_free_bytes = int(min_free_gib * GIB)
+    resolved_job_dir = Path(job_dir).expanduser().resolve()
+    if qe_scratch_outdir:
+        scratch = Path(qe_scratch_outdir).expanduser()
+        if not scratch.is_absolute():
+            scratch = resolved_job_dir / scratch
+        scratch = scratch.resolve()
+        scratch_observation = _disk_space_observation(
+            label="qe_scratch_filesystem",
+            requested_path=scratch,
+            minimum_free_bytes=minimum_free_bytes,
+        )
+    else:
+        scratch_observation = {
+            "label": "qe_scratch_filesystem",
+            "requested_path": None,
+            "minimum_free_bytes": minimum_free_bytes,
+            "minimum_free_gib": min_free_gib,
+            "sufficient": False,
+            "check_error": "qe_scratch_outdir_missing_from_queue",
+        }
+    observations = [
+        _disk_space_observation(
+            label="project_job_filesystem",
+            requested_path=resolved_job_dir,
+            minimum_free_bytes=minimum_free_bytes,
+        ),
+        scratch_observation,
+    ]
+    passed = all(item.get("sufficient") is True for item in observations)
+    has_check_error = any(item.get("check_error") for item in observations)
+    return {
+        "status": (
+            "passed"
+            if passed
+            else "blocked_check_failed"
+            if has_check_error
+            else "blocked_insufficient_free_space"
+        ),
+        "passed": passed,
+        "minimum_free_bytes_per_filesystem": minimum_free_bytes,
+        "minimum_free_gib_per_filesystem": min_free_gib,
+        "observations": observations,
+        "checked_unix_time": time.time(),
+    }
+
+
+def _mpi_program_version(path: str, *, timeout_seconds: int = 10) -> str:
+    """Read a fixed launcher version string without allowing arbitrary probes."""
+
+    try:
+        completed = subprocess.run(
+            [path, "--version"],
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise RuntimeError(f"Unable to inspect MPI launcher version: {exc}") from exc
+    rendered = "\n".join(
+        part.strip() for part in (completed.stdout, completed.stderr) if part.strip()
+    )
+    if completed.returncode != 0 or not rendered:
+        raise RuntimeError(
+            "Unable to inspect MPI launcher version: "
+            f"exit={completed.returncode}, output={rendered[:500]!r}"
+        )
+    return rendered.splitlines()[0].strip()
+
+
+def _execution_provenance(
+    *, mpi_ranks: int, omp_threads: int, mpi_path: str,
+) -> dict[str, Any]:
+    if mpi_ranks == 1:
+        return validate_execution_provenance({
+            "execution_mode": "serial",
+            "mpi_ranks": 1,
+            "omp_threads": omp_threads,
+            "mpi_launcher_path": None,
+            "mpi_launcher_sha256": None,
+            "mpi_program_version": None,
+        })
+    launcher = Path(mpi_path).resolve()
+    return validate_execution_provenance({
+        "execution_mode": "mpi",
+        "mpi_ranks": mpi_ranks,
+        "omp_threads": omp_threads,
+        "mpi_launcher_path": str(launcher),
+        "mpi_launcher_sha256": _sha256(launcher),
+        "mpi_program_version": _mpi_program_version(str(launcher)),
+    })
 
 
 def _command(
@@ -166,13 +506,28 @@ def run_jobs(
     omp_threads: int = 1,
     mpi_executable: str = "mpirun",
     timeout_seconds: int = 21600,
+    min_free_gib: float = 1.0,
     force: bool = False,
     override_resource_policy: bool = False,
 ) -> dict[str, Any]:
     if max_jobs < 1:
         raise ValueError("max_jobs must be at least 1")
+    if (
+        isinstance(mpi_ranks, bool)
+        or not isinstance(mpi_ranks, int)
+        or mpi_ranks < 1
+    ):
+        raise ValueError("mpi_ranks must be a positive integer")
     if omp_threads < 1:
         raise ValueError("omp_threads must be at least 1")
+    if (
+        isinstance(timeout_seconds, bool)
+        or not isinstance(timeout_seconds, int)
+        or timeout_seconds < 1
+    ):
+        raise ValueError("timeout_seconds must be a positive integer")
+    if not math.isfinite(min_free_gib) or min_free_gib < 0:
+        raise ValueError("min_free_gib must be finite and non-negative")
     preflight_path = Path(preflight_path).resolve()
     preflight = _load_json(preflight_path)
     preflight_sha256 = _sha256(preflight_path)
@@ -189,8 +544,17 @@ def run_jobs(
             "Execution requires preflight status runnable_not_started; got "
             f"{preflight.get('status')}"
         )
-    queue_path = Path(preflight["queue_manifest"]).resolve()
+    queue_path = _validated_queue_manifest_path(
+        preflight_path=preflight_path,
+        recorded_path=preflight.get("queue_manifest"),
+    )
     queue = _load_queue(queue_path)
+    _validate_queue_path_containment(
+        preflight_path=preflight_path,
+        preflight=preflight,
+        queue_path=queue_path,
+        queue=queue,
+    )
     if candidate_ids:
         wanted = set(candidate_ids)
         queue = [row for row in queue if row.get("candidate_id") in wanted]
@@ -226,7 +590,70 @@ def run_jobs(
         _resolve_executable(mpi_executable)
         if execute and mpi_ranks > 1 else mpi_executable if mpi_ranks > 1 else ""
     )
+    execution_provenance = (
+        _execution_provenance(
+            mpi_ranks=mpi_ranks, omp_threads=omp_threads, mpi_path=mpi_path,
+        )
+        if execute else None
+    )
     provenance_blockers = _provenance_blockers(preflight, queue)
+    production_workflows = {
+        "qe_pbe_candidate_relax_v1", "qe_pbe_candidate_static_v1",
+    }
+    if preflight.get("workflow_version") in production_workflows:
+        if preflight.get("production_settings_certified") is not True:
+            provenance_blockers.append(
+                "production_settings_not_convergence_certified"
+            )
+        else:
+            try:
+                certificate = verify_convergence_certificate(
+                    Path(str(preflight.get("convergence_certificate") or "")),
+                    required_elements=preflight.get("required_elements") or [],
+                    config_path=Path(preflight["config"]),
+                    pseudo_manifest_path=Path(preflight["pseudo_manifest"]),
+                    pw_executable_path=(Path(pw_executable) if execute else None),
+                )
+                if (
+                    preflight.get("convergence_certificate_sha256")
+                    != certificate["certificate_sha256"]
+                    or preflight.get("convergence_certificate_payload_sha256")
+                    != certificate["certificate_payload_sha256"]
+                ):
+                    provenance_blockers.append(
+                        "convergence_certificate_lineage_mismatch"
+                    )
+                if execute:
+                    try:
+                        require_same_execution_provenance(
+                            execution_provenance,
+                            certificate["execution_provenance"],
+                            label="convergence certificate",
+                        )
+                    except ValueError as exc:
+                        provenance_blockers.append(
+                            f"certified_execution_provenance_mismatch:{exc}"
+                        )
+            except (FileNotFoundError, ValueError, OSError) as exc:
+                provenance_blockers.append(
+                    f"convergence_certificate_verification_failed:{exc}"
+                )
+    if execute and preflight.get("stage") == "confirmation":
+        actual_pw_sha = _sha256(Path(pw_executable))
+        if actual_pw_sha != preflight.get("baseline_pw_executable_sha256"):
+            provenance_blockers.append(
+                "confirmation_executable_differs_from_sweep"
+            )
+        try:
+            require_same_execution_provenance(
+                execution_provenance,
+                preflight.get("baseline_execution_provenance"),
+                label="convergence sweep",
+            )
+        except ValueError as exc:
+            provenance_blockers.append(
+                f"confirmation_execution_provenance_mismatch:{exc}"
+            )
     if execute and provenance_blockers:
         raise ValueError(
             "Execution provenance verification failed: "
@@ -266,6 +693,7 @@ def run_jobs(
             "input": str(input_path),
             "output": str(output_path),
             "record": str(record_path),
+            "qe_scratch_outdir": str(row.get("qe_scratch_outdir") or ""),
             "command": command,
             "preflight_blockers": blockers,
             "qe_input_sha256": str(row.get("qe_input_sha256") or ""),
@@ -285,6 +713,12 @@ def run_jobs(
                 "mpi_ranks": mpi_ranks,
                 "omp_threads_per_rank": omp_threads,
                 "timeout_seconds_per_job": timeout_seconds,
+                "minimum_free_gib_per_project_and_scratch_filesystem": min_free_gib,
+            },
+            "disk_space_policy": {
+                "minimum_free_gib_per_project_and_scratch_filesystem": min_free_gib,
+                "check_timing": "immediately_before_each_actual_launch",
+                "plan_only_disk_checks_performed": False,
             },
             "dft_validated_count": 0,
             "provenance_blockers": provenance_blockers,
@@ -319,6 +753,7 @@ def run_jobs(
             queue_manifest_sha256=queue_manifest_sha256,
             preflight_settings_hash=preflight_settings_hash,
             pw_executable_sha256=pw_executable_sha256,
+            execution_provenance=execution_provenance,
         )
         if (
             existing["job_done"]
@@ -338,6 +773,62 @@ def run_jobs(
             continue
 
         if launched_count >= max_jobs:
+            break
+
+        disk_space_gate = _disk_space_gate(
+            job_dir=Path(job["job_dir"]),
+            qe_scratch_outdir=job["qe_scratch_outdir"],
+            min_free_gib=min_free_gib,
+        )
+        if not disk_space_gate["passed"]:
+            blocked_at = time.time()
+            gate_id = f"disk_gate_{time.time_ns()}"
+            attempts_dir = record_path.parent / "attempts"
+            attempts_dir.mkdir(parents=True, exist_ok=True)
+            gate_record_path = attempts_dir / f"{gate_id}.json"
+            if record_path.is_file():
+                shutil.copy2(
+                    record_path,
+                    attempts_dir / f"stale_record_{gate_id}.json",
+                )
+            blocked_status = (
+                "blocked_disk_space_check_failed"
+                if disk_space_gate["status"] == "blocked_check_failed"
+                else "blocked_insufficient_disk_space"
+            )
+            blocked_record = {
+                "runner_version": RUNNER_VERSION,
+                **job,
+                "run_status": blocked_status,
+                "return_code": None,
+                "launched": False,
+                "blocked_unix_time": blocked_at,
+                "attempt_id": gate_id,
+                "attempt_record": str(gate_record_path),
+                "preflight_sha256": preflight_sha256,
+                "queue_manifest_sha256": queue_manifest_sha256,
+                "preflight_settings_hash": preflight_settings_hash,
+                "pw_executable": pw_executable,
+                "pw_executable_sha256": pw_executable_sha256,
+                "execution_provenance": execution_provenance,
+                "disk_space_gate": disk_space_gate,
+                "resource_limits": {
+                    "mpi_ranks": mpi_ranks,
+                    "omp_threads_per_rank": omp_threads,
+                    "timeout_seconds": timeout_seconds,
+                    "minimum_free_gib_per_project_and_scratch_filesystem": min_free_gib,
+                },
+            }
+            rendered = json.dumps(blocked_record, indent=2)
+            record_path.write_text(rendered, encoding="utf-8")
+            gate_record_path.write_text(rendered, encoding="utf-8")
+            results.append(blocked_record)
+            print(
+                f"[{index}/{len(planned)}] Blocked {job['candidate_id']}: "
+                f"{disk_space_gate['status']}"
+            )
+            # Stop the invocation after a disk gate failure. Later jobs may use
+            # the same full filesystem, and no automatic launch is safe here.
             break
         launched_count += 1
 
@@ -365,10 +856,13 @@ def run_jobs(
             "preflight_settings_hash": preflight_settings_hash,
             "pw_executable": pw_executable,
             "pw_executable_sha256": pw_executable_sha256,
+            "execution_provenance": execution_provenance,
+            "disk_space_gate": disk_space_gate,
             "resource_limits": {
                 "mpi_ranks": mpi_ranks,
                 "omp_threads_per_rank": omp_threads,
                 "timeout_seconds": timeout_seconds,
+                "minimum_free_gib_per_project_and_scratch_filesystem": min_free_gib,
             },
         }
         record_path.write_text(json.dumps(running_record, indent=2), encoding="utf-8")
@@ -441,17 +935,43 @@ def run_jobs(
             "preflight_settings_hash": preflight_settings_hash,
             "pw_executable": pw_executable,
             "pw_executable_sha256": pw_executable_sha256,
+            "execution_provenance": execution_provenance,
+            "disk_space_gate": disk_space_gate,
         }
         record_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
         attempt_record_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
         results.append(result)
 
+    disk_blocked = any(
+        item.get("run_status") in {
+            "blocked_insufficient_disk_space",
+            "blocked_disk_space_check_failed",
+        }
+        for item in results
+    )
     summary = {
         "runner_version": RUNNER_VERSION,
-        "status": "execution_finished_requires_collection",
+        "status": (
+            "execution_blocked_by_disk_space_gate"
+            if disk_blocked else "execution_finished_requires_collection"
+        ),
         "execute_requested": True,
         "jobs": results,
         "dft_validated_count": 0,
+        "execution_provenance": execution_provenance,
+        "disk_space_policy": {
+            "minimum_free_gib_per_project_and_scratch_filesystem": min_free_gib,
+            "check_timing": "immediately_before_each_actual_launch",
+        },
+        "disk_space_checks": [
+            {
+                "candidate_id": item["candidate_id"],
+                "run_status": item["run_status"],
+                "disk_space_gate": item["disk_space_gate"],
+            }
+            for item in results
+            if item.get("disk_space_gate") is not None
+        ],
         "scientific_limit": (
             "Process completion alone is not DFT validation. Collect final "
             "structures, convergence metrics, and consistent static energies next."
@@ -472,6 +992,15 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--omp-threads", type=int, default=1)
     parser.add_argument("--mpi-executable", default="mpirun")
     parser.add_argument("--timeout-seconds", type=int, default=21600)
+    parser.add_argument(
+        "--min-free-gib",
+        type=float,
+        default=1.0,
+        help=(
+            "Minimum free GiB required on both the job and QE scratch "
+            "filesystems immediately before each launch (default: 1)."
+        ),
+    )
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--override-resource-policy", action="store_true")
     return parser
@@ -488,6 +1017,7 @@ if __name__ == "__main__":
         omp_threads=args.omp_threads,
         mpi_executable=args.mpi_executable,
         timeout_seconds=args.timeout_seconds,
+        min_free_gib=args.min_free_gib,
         force=args.force,
         override_resource_policy=args.override_resource_policy,
     )

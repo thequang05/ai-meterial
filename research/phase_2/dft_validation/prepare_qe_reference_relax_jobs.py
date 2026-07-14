@@ -17,7 +17,7 @@ import shutil
 from pathlib import Path
 from typing import Any
 
-from prepare_qe_jobs import prepare_jobs
+from prepare_qe_jobs import _ensure_fresh_output_dir, prepare_jobs
 
 
 SAFE_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}")
@@ -50,10 +50,11 @@ def prepare_reference_relax_jobs(
     pseudo_dir: Path,
     output_dir: Path,
     pw_executable: str = "pw.x",
+    convergence_certificate_path: Path | None = None,
+    scratch_root: Path | None = None,
 ) -> dict[str, Any]:
     rows = _read_inventory(reference_inventory_path)
-    output_dir = Path(output_dir).resolve()
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = _ensure_fresh_output_dir(output_dir)
     inventory_snapshot = output_dir / "reference_inventory_snapshot.csv"
     shutil.copy2(Path(reference_inventory_path).resolve(), inventory_snapshot)
 
@@ -117,6 +118,12 @@ def prepare_reference_relax_jobs(
         pseudo_manifest_path=pseudo_manifest_path,
         pseudo_dir=pseudo_dir,
         pw_executable=pw_executable,
+        convergence_certificate_path=convergence_certificate_path,
+        scratch_root=scratch_root,
+        _allowed_existing_output_names=frozenset({
+            inventory_snapshot.name,
+            report_path.name,
+        }),
     )
 
 
@@ -128,6 +135,14 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--pseudo-dir", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--pw-executable", default="pw.x")
+    parser.add_argument(
+        "--scratch-root", type=Path,
+        help=(
+            "Optional shared QE scratch root. Each reference job uses a distinct "
+            "<workflow>/<campaign>/<job-id> directory; default is local ./tmp."
+        ),
+    )
+    parser.add_argument("--convergence-certificate", type=Path, required=True)
     return parser
 
 
@@ -140,4 +155,6 @@ if __name__ == "__main__":
         pseudo_dir=args.pseudo_dir,
         output_dir=args.output_dir,
         pw_executable=args.pw_executable,
+        convergence_certificate_path=args.convergence_certificate,
+        scratch_root=args.scratch_root,
     )

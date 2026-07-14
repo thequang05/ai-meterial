@@ -84,6 +84,22 @@ class MPSnapshotManifestTests(unittest.TestCase):
                     output_path=root / "snapshot.json",
                 )
 
+    def test_refuses_to_overwrite_existing_manifest(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            raw, metadata, cache = self._fixture(root)
+            output = root / "snapshot.json"
+            output.write_text("operator-owned", encoding="utf-8")
+
+            with self.assertRaisesRegex(FileExistsError, "Refusing to overwrite"):
+                build_manifest(
+                    raw_json_path=raw,
+                    materials_csv_path=metadata,
+                    structure_cache_path=cache,
+                    output_path=output,
+                )
+            self.assertEqual(output.read_text(encoding="utf-8"), "operator-owned")
+
 
 if __name__ == "__main__":
     unittest.main()

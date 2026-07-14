@@ -15,16 +15,32 @@ from collect_qe_convergence import (
     _select_stable_tail,
     collect_convergence,
 )
+from collect_qe_convergence_confirmation import collect_confirmation
+from prepare_qe_convergence_confirmation import prepare_confirmation_jobs
 from prepare_qe_convergence_jobs import (
+    convergence_settings_hash,
     prepare_convergence_jobs,
     validate_protocol,
 )
 from prepare_qe_jobs import prepare_jobs
 from prepare_sssp_manifest import create_manifest
-from run_qe_jobs import run_jobs
+from run_qe_jobs import _execution_provenance, run_jobs
+from qe_convergence_certificate import (
+    canonical_digest,
+    issue_convergence_certificate,
+    verify_convergence_certificate,
+)
 
 
 PROTOCOL_PATH = Path(__file__).with_name("qe_convergence_protocol_v1.json")
+SERIAL_EXECUTION = {
+    "execution_mode": "serial",
+    "mpi_ranks": 1,
+    "omp_threads": 1,
+    "mpi_launcher_path": None,
+    "mpi_launcher_sha256": None,
+    "mpi_program_version": None,
+}
 
 
 def _write_json(path: Path, value: dict) -> None:
@@ -128,11 +144,14 @@ def _build_source_preflight(root: Path) -> tuple[Path, dict]:
         pseudo_manifest_path=pseudo_manifest,
         pseudo_dir=pseudo_dir,
         pw_executable="/usr/bin/true",
+        convergence_source_only=True,
     )
     return source_dir / "dft_preflight.json", preflight
 
 
-def _prepare_convergence(root: Path) -> tuple[Path, dict]:
+def _prepare_convergence(
+    root: Path, *, scratch_root: Path | None = None,
+) -> tuple[Path, dict]:
     source_preflight, _ = _build_source_preflight(root)
     output_dir = root / "convergence"
     preflight = prepare_convergence_jobs(
@@ -141,6 +160,7 @@ def _prepare_convergence(root: Path) -> tuple[Path, dict]:
         protocol_path=PROTOCOL_PATH,
         output_dir=output_dir,
         pw_executable="/usr/bin/true",
+        scratch_root=scratch_root,
     )
     return output_dir / "convergence_preflight.json", preflight
 
@@ -193,10 +213,408 @@ def _write_synthetic_outputs(preflight_path: Path, preflight: dict) -> None:
             "preflight_settings_hash": preflight["convergence_settings_hash"],
             "qe_program_version": "7.4",
             "pw_executable_sha256": executable_sha,
+            "execution_provenance": SERIAL_EXECUTION,
+        }), encoding="utf-8")
+
+
+def _write_confirmation_outputs(preflight_path: Path, preflight: dict) -> None:
+    rows = _read_queue(Path(preflight["queue_manifest"]))
+    points = {point["point_id"]: point for point in preflight["study_points"]}
+    executable_sha = _sha(Path("/usr/bin/true"))
+    preflight_sha = _sha(preflight_path)
+    for row in rows:
+        point = points[row["point_id"]]
+        num_atoms = int(float(row["num_atoms"]))
+        anchor = point["sweep_anchor_reference"]
+        total_energy_ry = float(anchor["energy_ev_per_atom"]) * num_atoms / RY_TO_EV
+        force_lines = "\n".join(
+            f"atom {index + 1:4d} type 1   force = 0.00000000 0.00000000 0.00000000"
+            for index in range(num_atoms)
+        )
+        output = Path(row["qe_output"])
+        output.write_text("\n".join([
+            "Program PWSCF v.7.4 starts",
+            "convergence has been achieved in 8 iterations",
+            f"!    total energy = {total_energy_ry:.12f} Ry",
+            "Forces acting on atoms (cartesian axes, Ry/au):",
+            force_lines,
+            "Total force = 0.000000 Ry/Bohr",
+            "total   stress  (Ry/bohr**3) (kbar) P= 0.00",
+            "0.0 0.0 0.0  0.0 0.0 0.0",
+            "0.0 0.0 0.0  0.0 0.0 0.0",
+            "0.0 0.0 0.0  0.0 0.0 0.0",
+            "JOB DONE.", "",
+        ]), encoding="utf-8")
+        Path(row["run_record"]).write_text(json.dumps({
+            "run_status": "completed_requires_collection",
+            "entry_id": row["entry_id"],
+            "entry_role": row["entry_role"],
+            "source_id": row["source_id"],
+            "candidate_id": row["candidate_id"],
+            "formula": row["formula"],
+            "qe_input_sha256": row["qe_input_sha256"],
+            "qe_output_sha256": _sha(output),
+            "preflight_sha256": preflight_sha,
+            "queue_manifest_sha256": preflight["queue_manifest_sha256"],
+            "preflight_settings_hash": preflight["convergence_settings_hash"],
+            "qe_program_version": "7.4",
+            "pw_executable_sha256": executable_sha,
+            "execution_provenance": SERIAL_EXECUTION,
         }), encoding="utf-8")
 
 
 class QeConvergenceWorkflowTests(unittest.TestCase):
+    def test_certificate_issuer_refuses_to_overwrite(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            certificate = Path(temp_dir) / "certificate.json"
+            certificate.write_text("existing", encoding="utf-8")
+            with self.assertRaisesRegex(FileExistsError, "Refusing to overwrite"):
+                issue_convergence_certificate(
+                    payload={"synthetic": True}, output_path=certificate
+                )
+
+    def test_sweep_rejects_a_production_source_preflight(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source_path, source = _build_source_preflight(root)
+            source["status"] = "runnable_not_started"
+            source["production_settings_certified"] = True
+            _write_json(source_path, source)
+
+            with self.assertRaisesRegex(ValueError, "non-production bootstrap"):
+                prepare_convergence_jobs(
+                    source_preflight_path=source_path,
+                    representative_ids=["tic_candidate", "zrc_candidate"],
+                    protocol_path=PROTOCOL_PATH,
+                    output_dir=root / "rejected_sweep",
+                    pw_executable="/usr/bin/true",
+                )
+
+    def test_runner_records_canonical_serial_and_mpi_provenance(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            launcher = Path(temp_dir) / "fake_mpirun"
+            launcher.write_text(
+                "#!/bin/sh\necho 'Fake MPI launcher 1.2.3'\n",
+                encoding="utf-8",
+            )
+            launcher.chmod(0o755)
+            serial = _execution_provenance(
+                mpi_ranks=1, omp_threads=1, mpi_path="",
+            )
+            self.assertEqual(serial, SERIAL_EXECUTION)
+            mpi = _execution_provenance(
+                mpi_ranks=2, omp_threads=1, mpi_path=str(launcher),
+            )
+            self.assertEqual(mpi["execution_mode"], "mpi")
+            self.assertEqual(mpi["mpi_launcher_sha256"], _sha(launcher))
+            self.assertEqual(mpi["mpi_program_version"], "Fake MPI launcher 1.2.3")
+
+    def test_mixed_sweep_execution_provenance_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            preflight_path, preflight = _prepare_convergence(root)
+            _write_synthetic_outputs(preflight_path, preflight)
+            first = _read_queue(Path(preflight["queue_manifest"]))[0]
+            run_record = Path(first["run_record"])
+            record = json.loads(run_record.read_text(encoding="utf-8"))
+            record["execution_provenance"] = {
+                **SERIAL_EXECUTION,
+                "omp_threads": 2,
+            }
+            run_record.write_text(json.dumps(record), encoding="utf-8")
+            summary = collect_convergence(
+                preflight_path=preflight_path,
+                output_dir=root / "mixed_execution",
+            )
+            self.assertEqual(summary["status"], "blocked_incomplete_or_failed_runs")
+            self.assertIn(
+                "mixed_or_missing_execution_provenance",
+                summary["global_failures"],
+            )
+
+    def test_sweep_inputs_use_audited_campaign_scratch(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            scratch_root = root / "scratch"
+            _preflight_path, preflight = _prepare_convergence(
+                root, scratch_root=scratch_root
+            )
+            rows = _read_queue(Path(preflight["queue_manifest"]))
+            self.assertEqual(Path(preflight["scratch_root"]), scratch_root.resolve())
+            self.assertTrue(preflight["scratch_campaign_namespace"])
+            for row in rows:
+                outdir = Path(row["qe_scratch_outdir"])
+                self.assertTrue(outdir.is_dir())
+                self.assertTrue(outdir.is_relative_to(scratch_root.resolve()))
+                input_text = Path(row["qe_input"]).read_text(encoding="utf-8")
+                self.assertIn(str(outdir), input_text)
+
+    def test_confirmation_issues_certificate_and_unlocks_production(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            sweep_preflight_path, sweep_preflight = _prepare_convergence(root)
+            _write_synthetic_outputs(sweep_preflight_path, sweep_preflight)
+            sweep_collected = root / "sweep_collected"
+            provisional = collect_convergence(
+                preflight_path=sweep_preflight_path,
+                output_dir=sweep_collected,
+            )
+            self.assertEqual(provisional["status"], "provisional_selection_ready")
+            confirmation_dir = root / "confirmation"
+            confirmation = prepare_confirmation_jobs(
+                provisional_summary_path=sweep_collected / "convergence_summary.json",
+                sweep_preflight_path=sweep_preflight_path,
+                output_dir=confirmation_dir,
+                pw_executable="/usr/bin/true",
+                scratch_root=root / "confirmation_scratch",
+            )
+            confirmation_rows = _read_queue(Path(confirmation["queue_manifest"]))
+            self.assertTrue(all(
+                Path(row["qe_scratch_outdir"]).is_dir()
+                for row in confirmation_rows
+            ))
+            confirmation_preflight_path = confirmation_dir / "confirmation_preflight.json"
+            _write_confirmation_outputs(confirmation_preflight_path, confirmation)
+            confirmation_collected = root / "confirmation_collected"
+            collected = collect_confirmation(
+                preflight_path=confirmation_preflight_path,
+                output_dir=confirmation_collected,
+            )
+            self.assertEqual(collected["status"], "confirmation_passed")
+            certificate_path = confirmation_collected / "qe_convergence_certificate.json"
+            verified = verify_convergence_certificate(
+                certificate_path, required_elements=["C", "Ti", "Zr"]
+            )
+            self.assertEqual(verified["qe_program_version"], "7.4")
+            self.assertAlmostEqual(
+                verified["selected_settings"]["cutoff_pair_multiplier"], 1.0
+            )
+            self.assertAlmostEqual(
+                verified["production_settings"]["cutoff_pair_multiplier"], 1.45
+            )
+            self.assertAlmostEqual(
+                verified["production_settings"][
+                    "kpoint_spacing_inv_angstrom"
+                ],
+                0.13,
+            )
+            self.assertIn(
+                "does not prove convergence",
+                verified["production_settings_scope"],
+            )
+
+            source = json.loads(
+                (root / "source_relax" / "dft_preflight.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            production_dir = root / "certified_production"
+            production = prepare_jobs(
+                validation_report_path=Path(source["validation_report"]),
+                config_path=Path(source["config_source"]),
+                output_dir=production_dir,
+                top_n=2,
+                pseudo_manifest_path=Path(source["pseudo_manifest_source"]),
+                pseudo_dir=root / "source_pseudos",
+                pw_executable="/usr/bin/true",
+                convergence_certificate_path=certificate_path,
+                scratch_root=root / "production_scratch",
+            )
+            self.assertEqual(production["status"], "runnable_not_started")
+            self.assertTrue(production["production_settings_certified"])
+            self.assertAlmostEqual(production["global_ecutwfc_ry"], 87.0)
+            self.assertAlmostEqual(production["global_ecutrho_ry"], 696.0)
+            self.assertAlmostEqual(
+                production["effective_kpoint_spacing_inv_angstrom"], 0.13
+            )
+            self.assertEqual(len(list(production_dir.glob("jobs/*/vc-relax.in"))), 2)
+            production_rows = _read_queue(Path(production["queue_manifest"]))
+            for row in production_rows:
+                self.assertIn(
+                    row["qe_scratch_outdir"],
+                    Path(row["qe_input"]).read_text(encoding="utf-8"),
+                )
+
+    def test_certificate_verifier_rejects_locked_artifact_tamper(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            sweep_path, sweep = _prepare_convergence(root)
+            _write_synthetic_outputs(sweep_path, sweep)
+            sweep_out = root / "sweep_out"
+            collect_convergence(preflight_path=sweep_path, output_dir=sweep_out)
+            confirmation_dir = root / "confirmation"
+            confirmation = prepare_confirmation_jobs(
+                provisional_summary_path=sweep_out / "convergence_summary.json",
+                sweep_preflight_path=sweep_path,
+                output_dir=confirmation_dir,
+                pw_executable="/usr/bin/true",
+            )
+            confirmation_path = confirmation_dir / "confirmation_preflight.json"
+            _write_confirmation_outputs(confirmation_path, confirmation)
+            collected_dir = root / "confirmation_collected"
+            collect_confirmation(preflight_path=confirmation_path, output_dir=collected_dir)
+            certificate = collected_dir / "qe_convergence_certificate.json"
+            protocol = Path(confirmation["protocol"])
+            protocol.write_text(
+                protocol.read_text(encoding="utf-8") + "\n", encoding="utf-8"
+            )
+            with self.assertRaisesRegex(ValueError, "artifact hash mismatch"):
+                verify_convergence_certificate(certificate)
+
+    def test_confirmation_rejects_summary_metric_that_differs_from_csv(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            sweep_path, sweep = _prepare_convergence(root)
+            _write_synthetic_outputs(sweep_path, sweep)
+            sweep_out = root / "sweep_out"
+            collect_convergence(preflight_path=sweep_path, output_dir=sweep_out)
+            summary_path = sweep_out / "convergence_summary.json"
+            summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            summary["points"][0]["energy_ev_per_atom"] += 0.25
+            _write_json(summary_path, summary)
+
+            with self.assertRaisesRegex(ValueError, "JSON/CSV mismatch"):
+                prepare_confirmation_jobs(
+                    provisional_summary_path=summary_path,
+                    sweep_preflight_path=sweep_path,
+                    output_dir=root / "confirmation",
+                    pw_executable="/usr/bin/true",
+                )
+
+    def test_confirmation_rederives_energy_per_atom_from_total_energy(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            sweep_path, sweep = _prepare_convergence(root)
+            _write_synthetic_outputs(sweep_path, sweep)
+            sweep_out = root / "sweep_out"
+            collect_convergence(preflight_path=sweep_path, output_dir=sweep_out)
+            summary_path = sweep_out / "convergence_summary.json"
+            results_path = sweep_out / "convergence_results.csv"
+            summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            rows = _read_queue(results_path)
+            altered_energy = float(rows[0]["energy_ev_per_atom"]) + 0.25
+            rows[0]["energy_ev_per_atom"] = str(altered_energy)
+            with results_path.open("w", newline="", encoding="utf-8") as handle:
+                writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+                writer.writeheader()
+                writer.writerows(rows)
+            summary["points"][0]["energy_ev_per_atom"] = altered_energy
+            summary["results_sha256"] = _sha(results_path)
+            _write_json(summary_path, summary)
+
+            with self.assertRaisesRegex(
+                ValueError, "energy_ev_per_atom_from_total_energy_ry"
+            ):
+                prepare_confirmation_jobs(
+                    provisional_summary_path=summary_path,
+                    sweep_preflight_path=sweep_path,
+                    output_dir=root / "confirmation",
+                    pw_executable="/usr/bin/true",
+                )
+
+    def test_certificate_semantics_reject_hash_consistent_summary_metric_tamper(self):
+        """Even a re-hashed artifact chain cannot split JSON evidence from CSV."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            sweep_path, sweep = _prepare_convergence(root)
+            _write_synthetic_outputs(sweep_path, sweep)
+            sweep_out = root / "sweep_out"
+            collect_convergence(preflight_path=sweep_path, output_dir=sweep_out)
+            confirmation_dir = root / "confirmation"
+            confirmation = prepare_confirmation_jobs(
+                provisional_summary_path=sweep_out / "convergence_summary.json",
+                sweep_preflight_path=sweep_path,
+                output_dir=confirmation_dir,
+                pw_executable="/usr/bin/true",
+            )
+            confirmation_path = confirmation_dir / "confirmation_preflight.json"
+            _write_confirmation_outputs(confirmation_path, confirmation)
+            collected_dir = root / "confirmation_collected"
+            collect_confirmation(
+                preflight_path=confirmation_path, output_dir=collected_dir
+            )
+            original_certificate = json.loads(
+                (collected_dir / "qe_convergence_certificate.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            payload = original_certificate["certificate_payload"]
+
+            sweep_summary_path = Path(payload["artifacts"]["sweep_summary"]["path"])
+            sweep_summary = json.loads(sweep_summary_path.read_text(encoding="utf-8"))
+            sweep_summary["points"][0]["energy_ev_per_atom"] += 0.25
+            _write_json(sweep_summary_path, sweep_summary)
+            tampered_summary_sha = _sha(sweep_summary_path)
+            payload["artifacts"]["sweep_summary"]["sha256"] = tampered_summary_sha
+
+            confirmation_preflight_path = Path(
+                payload["artifacts"]["confirmation_preflight"]["path"]
+            )
+            confirmation_preflight = json.loads(
+                confirmation_preflight_path.read_text(encoding="utf-8")
+            )
+            confirmation_preflight["provisional_summary_sha256"] = tampered_summary_sha
+            settings_payload = confirmation_preflight["convergence_settings_payload"]
+            settings_payload["provisional_summary_sha256"] = tampered_summary_sha
+            new_settings_hash = convergence_settings_hash(settings_payload)
+            confirmation_preflight["convergence_settings_hash"] = new_settings_hash
+            _write_json(confirmation_preflight_path, confirmation_preflight)
+            new_preflight_sha = _sha(confirmation_preflight_path)
+            payload["artifacts"]["confirmation_preflight"]["sha256"] = new_preflight_sha
+            payload["confirmation_settings_hash"] = new_settings_hash
+
+            confirmation_summary_path = Path(
+                payload["artifacts"]["confirmation_summary"]["path"]
+            )
+            confirmation_summary = json.loads(
+                confirmation_summary_path.read_text(encoding="utf-8")
+            )
+            confirmation_summary["confirmation_settings_hash"] = new_settings_hash
+            confirmation_summary["confirmation_preflight_sha256"] = new_preflight_sha
+            _write_json(confirmation_summary_path, confirmation_summary)
+            payload["artifacts"]["confirmation_summary"]["sha256"] = _sha(
+                confirmation_summary_path
+            )
+
+            malicious_certificate = root / "malicious_but_rehashed_certificate.json"
+            issue_convergence_certificate(
+                payload=payload, output_path=malicious_certificate
+            )
+            with self.assertRaisesRegex(ValueError, "JSON/CSV mismatch"):
+                verify_convergence_certificate(malicious_certificate)
+
+    def test_certificate_rejects_production_setting_outside_locked_window(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            sweep_path, sweep = _prepare_convergence(root)
+            _write_synthetic_outputs(sweep_path, sweep)
+            sweep_out = root / "sweep_out"
+            collect_convergence(preflight_path=sweep_path, output_dir=sweep_out)
+            confirmation_dir = root / "confirmation"
+            confirmation = prepare_confirmation_jobs(
+                provisional_summary_path=sweep_out / "convergence_summary.json",
+                sweep_preflight_path=sweep_path,
+                output_dir=confirmation_dir,
+                pw_executable="/usr/bin/true",
+            )
+            confirmation_path = confirmation_dir / "confirmation_preflight.json"
+            _write_confirmation_outputs(confirmation_path, confirmation)
+            collected_dir = root / "confirmation_collected"
+            collect_confirmation(
+                preflight_path=confirmation_path, output_dir=collected_dir
+            )
+            certificate_path = collected_dir / "qe_convergence_certificate.json"
+            certificate = json.loads(certificate_path.read_text(encoding="utf-8"))
+            payload = certificate["certificate_payload"]
+            payload["production_settings"]["kpoint_spacing_inv_angstrom"] = 0.12
+            digest = canonical_digest(payload)
+            certificate["certificate_payload_sha256"] = digest
+            certificate["certificate_id"] = f"qeconv-{digest[:20]}"
+            tampered = root / "outside_tested_window_certificate.json"
+            _write_json(tampered, certificate)
+            with self.assertRaisesRegex(ValueError, "production_settings"):
+                verify_convergence_certificate(tampered)
+
     def test_sparse_plan_is_static_and_does_not_execute(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

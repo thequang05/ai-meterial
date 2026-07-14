@@ -4,7 +4,7 @@ The template enumerates every non-empty chemical subsystem required by the
 converged candidate static energies.  It never queries a database and never
 marks coverage complete.  It is only useful for estimating the required
 subsystems; it is deliberately not a valid input to ``compute_qe_hull.py``.
-Official screening requires the cryptographically locked snapshot, inventory,
+Official screening requires the content-hash-locked snapshot, inventory,
 query receipts, and energy-collector summaries produced by the dedicated MP
 inventory workflow.
 """

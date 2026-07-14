@@ -22,6 +22,8 @@ from pathlib import Path
 from typing import Any
 
 from pymatgen.core import Composition
+from qe_convergence_certificate import verify_convergence_certificate
+from qe_output_directory import require_fresh_output_dir
 
 
 WORKFLOW_VERSION = "qe_reference_hull_v1"
@@ -58,6 +60,14 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _energy_records_sha256(path: Path) -> str:
+    """Rebuild the collector's canonical record digest from its CSV."""
+
+    rows = _read_csv(path)
+    payload = json.dumps(rows, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 def _verify_energy_summary(entries_path: Path, summary_path: Path) -> dict[str, Any]:
     summary = _load_json(summary_path)
     if summary.get("collector_version") != "qe_static_collector_v1":
@@ -66,8 +76,13 @@ def _verify_energy_summary(entries_path: Path, summary_path: Path) -> dict[str, 
     if not HASH_RE.fullmatch(expected_sha) or _sha256(entries_path) != expected_sha:
         raise ValueError("Static energy CSV no longer matches its collector summary")
     records_digest = str(summary.get("energy_records_sha256") or "").lower()
-    if not HASH_RE.fullmatch(records_digest):
-        raise ValueError("Energy summary has no valid canonical records digest")
+    if (
+        not HASH_RE.fullmatch(records_digest)
+        or _energy_records_sha256(entries_path) != records_digest
+    ):
+        raise ValueError(
+            "Static energy CSV canonical records no longer match its collector summary"
+        )
     return summary
 
 
@@ -289,6 +304,9 @@ def _parse_entry(row: dict[str, str], expected_role: str) -> dict[str, Any]:
     energy_ev_per_atom: float | None = None
     total_energy_ry: float | None = None
     settings_hash = str(row.get("static_settings_hash") or "").strip().lower()
+    certificate_payload_sha256 = str(
+        row.get("convergence_certificate_payload_sha256") or ""
+    ).strip().lower()
     if converged:
         total_energy_ry = _finite_float(
             row.get("total_energy_ry"), f"{entry_id}.total_energy_ry"
@@ -307,6 +325,10 @@ def _parse_entry(row: dict[str, str], expected_role: str) -> dict[str, Any]:
             raise ValueError(f"Per-atom energy mismatch for {entry_id}")
         if not HASH_RE.fullmatch(settings_hash):
             raise ValueError(f"Invalid static_settings_hash for {entry_id}")
+        if not HASH_RE.fullmatch(certificate_payload_sha256):
+            raise ValueError(
+                f"Invalid convergence certificate payload hash for {entry_id}"
+            )
         source_cif_sha256 = str(row.get("source_cif_sha256") or "").lower()
         relaxed_cif_sha256 = str(row.get("relaxed_cif_sha256") or "").lower()
         qe_input_sha256 = str(row.get("qe_input_sha256") or "").lower()
@@ -340,6 +362,9 @@ def _parse_entry(row: dict[str, str], expected_role: str) -> dict[str, Any]:
                 "qe_input_sha256": qe_input_sha256,
                 "qe_output_sha256": qe_output_sha256,
                 "static_settings_hash": settings_hash,
+                "convergence_certificate_payload_sha256": (
+                    certificate_payload_sha256
+                ),
                 "pw_executable_sha256": pw_executable_sha256,
                 "total_energy_ry": total_energy_ry,
             }, sort_keys=True).encode("utf-8")
@@ -361,6 +386,7 @@ def _parse_entry(row: dict[str, str], expected_role: str) -> dict[str, Any]:
         "static_gate_status": status,
         "converged": converged,
         "settings_hash": settings_hash,
+        "convergence_certificate_payload_sha256": certificate_payload_sha256,
         "source_cif_sha256": str(row.get("source_cif_sha256") or "").lower(),
         "relaxed_cif_sha256": str(row.get("relaxed_cif_sha256") or "").lower(),
         "entry_lineage_sha256": str(row.get("entry_lineage_sha256") or "").lower(),
@@ -579,6 +605,7 @@ def compute_hulls(
     near_hull_threshold_ev_per_atom: float = 0.025,
     diagnostic_incomplete: bool = False,
 ) -> dict[str, Any]:
+    output_dir = require_fresh_output_dir(output_dir)
     if (
         not math.isfinite(near_hull_threshold_ev_per_atom)
         or near_hull_threshold_ev_per_atom < 0
@@ -592,6 +619,35 @@ def compute_hulls(
     reference_summary = _verify_energy_summary(
         reference_entries_path, reference_summary_path
     )
+    candidate_certificate = verify_convergence_certificate(
+        Path(str(candidate_summary.get("convergence_certificate") or ""))
+    )
+    reference_certificate = verify_convergence_certificate(
+        Path(str(reference_summary.get("convergence_certificate") or ""))
+    )
+    for label, energy_summary, certificate in (
+        ("candidate", candidate_summary, candidate_certificate),
+        ("reference", reference_summary, reference_certificate),
+    ):
+        if (
+            energy_summary.get("convergence_certificate_sha256")
+            != certificate["certificate_sha256"]
+            or energy_summary.get("convergence_certificate_payload_sha256")
+            != certificate["certificate_payload_sha256"]
+        ):
+            raise ValueError(
+                f"{label.capitalize()} static summary certificate lineage mismatch"
+            )
+    if (
+        candidate_certificate["certificate_payload_sha256"]
+        != reference_certificate["certificate_payload_sha256"]
+    ):
+        raise ValueError(
+            "Candidate and reference energies use different convergence certificates"
+        )
+    convergence_certificate_payload_sha256 = candidate_certificate[
+        "certificate_payload_sha256"
+    ]
     candidates = [
         _parse_entry(row, "candidate") for row in _read_csv(candidate_entries_path)
     ]
@@ -606,6 +662,14 @@ def compute_hulls(
         raise ValueError("Candidate summary settings hash does not match its entries")
     if reference_summary.get("static_settings_hash") not in reference_hashes:
         raise ValueError("Reference summary settings hash does not match its entries")
+    if any(
+        entry["convergence_certificate_payload_sha256"]
+        != convergence_certificate_payload_sha256
+        for entry in candidates + references if entry["converged"]
+    ):
+        raise ValueError(
+            "Static energy entry convergence-certificate lineage mismatch"
+        )
     all_ids = [entry["entry_id"] for entry in candidates + references]
     id_counts = Counter(all_ids)
     duplicates = sorted(entry_id for entry_id, count in id_counts.items() if count > 1)
@@ -663,6 +727,9 @@ def compute_hulls(
             "within_user_supplied_hull_threshold": False,
             "claim_scope": CLAIM_SCOPE,
             "static_settings_hash": candidate["settings_hash"],
+            "convergence_certificate_payload_sha256": (
+                convergence_certificate_payload_sha256
+            ),
         }
         if not blockers:
             from pymatgen.analysis.phase_diagram import PhaseDiagram
@@ -738,7 +805,6 @@ def compute_hulls(
                 row["diagnostic_lower_bound_ehull_ev_per_atom"] = lower_bound
         result_rows.append(row)
 
-    output_dir = Path(output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     results_path = output_dir / "hull_results.csv"
     _write_csv(results_path, result_rows)
@@ -762,6 +828,13 @@ def compute_hulls(
         "coverage_status_counts": dict(status_counts),
         "claim_scope": CLAIM_SCOPE,
         "thermodynamically_validated_count": 0,
+        "convergence_certificate": candidate_certificate["certificate_path"],
+        "convergence_certificate_sha256": candidate_certificate[
+            "certificate_sha256"
+        ],
+        "convergence_certificate_payload_sha256": (
+            convergence_certificate_payload_sha256
+        ),
         "scientific_limit": (
             "This finite-smearing, non-spin-polarized, scalar-relativistic PBE "
             "screen is relative to one declared recomputed reference snapshot. "

@@ -66,6 +66,12 @@ def build_manifest(
     *, raw_json_path: Path, materials_csv_path: Path,
     structure_cache_path: Path, output_path: Path,
 ) -> dict[str, Any]:
+    output_path = Path(output_path).expanduser().resolve()
+    if output_path.exists():
+        raise FileExistsError(
+            "Refusing to overwrite an existing MP snapshot manifest: "
+            f"{output_path}"
+        )
     raw_json_path = Path(raw_json_path).resolve()
     materials_csv_path = Path(materials_csv_path).resolve()
     structure_cache_path = Path(structure_cache_path).resolve()
@@ -177,7 +183,6 @@ def build_manifest(
             "composition_audit_sha256": composition_audit.hexdigest(),
         },
     }
-    output_path = Path(output_path).resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     print(f"Verified exact MP snapshot IDs: {len(raw_ids):,}")

@@ -1,0 +1,43 @@
+{
+  "file_count": 5,
+  "files": [
+    {
+      "candidate_id": "camp_41a80c8b8b30",
+      "filename": "camp_41a80c8b8b30_chgnet_relaxed.cif",
+      "formula": "Ti3NbWC5",
+      "rank": 1,
+      "sha256": "48b167049e7bb119b4f37454482521c73929a4a1673f57cae65230453f822c03"
+    },
+    {
+      "candidate_id": "camp_015e29be10e0",
+      "filename": "camp_015e29be10e0_chgnet_relaxed.cif",
+      "formula": "Zr3TiWC5",
+      "rank": 2,
+      "sha256": "4bcbd8b9f3a92d0dc808fa095db519714f48be2dea1dcb04d8a7270808c66958"
+    },
+    {
+      "candidate_id": "camp_59538db42ea7",
+      "filename": "camp_59538db42ea7_chgnet_relaxed.cif",
+      "formula": "Ti3VWC5",
+      "rank": 3,
+      "sha256": "d893058661af73b15d7a332d9327c5864a4d394707efd0858c7a2e699ea1e556"
+    },
+    {
+      "candidate_id": "camp_5e6d485d7147",
+      "filename": "camp_5e6d485d7147_chgnet_relaxed.cif",
+      "formula": "Zr3TaWC5",
+      "rank": 4,
+      "sha256": "179f1a225b08f8373123d4fb8e069c4c72e4ace73663925278b229cfdfc41a1a"
+    },
+    {
+      "candidate_id": "camp_436da3bac8cc",
+      "filename": "camp_436da3bac8cc_chgnet_relaxed.cif",
+      "formula": "Ti2VWC4",
+      "rank": 5,
+      "sha256": "f222e7eaa8af9863b7ee7a3df70fd9997ef4e0400fd32f509ea2356b864bbbcb"
+    }
+  ],
+  "report_version": "w_c_structural_validation_v1",
+  "schema_version": "dft_candidate_cif_bundle_v1",
+  "scientific_status": "chgnet_relaxed_not_dft_validated"
+}

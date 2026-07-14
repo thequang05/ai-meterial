@@ -79,8 +79,7 @@
       "review_flags": [],
       "post_relax_audit_status": "pass",
       "post_relax_min_distance_angstrom": 2.1492808341920937,
-      "post_relax_space_group": "R3m",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_41a80c8b8b30_chgnet_relaxed.cif"
+      "post_relax_space_group": "R3m"
     },
     {
       "rank": 2,
@@ -95,8 +94,7 @@
       "review_flags": [],
       "post_relax_audit_status": "pass",
       "post_relax_min_distance_angstrom": 2.1932169905630263,
-      "post_relax_space_group": "R3m",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_015e29be10e0_chgnet_relaxed.cif"
+      "post_relax_space_group": "R3m"
     },
     {
       "rank": 3,
@@ -111,8 +109,7 @@
       "review_flags": [],
       "post_relax_audit_status": "pass",
       "post_relax_min_distance_angstrom": 2.082959205823109,
-      "post_relax_space_group": "R3m",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_59538db42ea7_chgnet_relaxed.cif"
+      "post_relax_space_group": "R3m"
     },
     {
       "rank": 4,
@@ -127,8 +124,7 @@
       "review_flags": [],
       "post_relax_audit_status": "pass",
       "post_relax_min_distance_angstrom": 2.1917453910637033,
-      "post_relax_space_group": "R3m",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_5e6d485d7147_chgnet_relaxed.cif"
+      "post_relax_space_group": "R3m"
     },
     {
       "rank": 5,
@@ -143,8 +139,7 @@
       "review_flags": [],
       "post_relax_audit_status": "pass",
       "post_relax_min_distance_angstrom": 2.1071379929482763,
-      "post_relax_space_group": "R-3m",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_436da3bac8cc_chgnet_relaxed.cif"
+      "post_relax_space_group": "R-3m"
     },
     {
       "rank": 6,
@@ -159,8 +154,7 @@
       "review_flags": [],
       "post_relax_audit_status": "pass",
       "post_relax_min_distance_angstrom": 2.1523832228361064,
-      "post_relax_space_group": "P-3m1",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_c606f3dc26dd_chgnet_relaxed.cif"
+      "post_relax_space_group": "P-3m1"
     },
     {
       "rank": 7,
@@ -175,8 +169,7 @@
       "review_flags": [],
       "post_relax_audit_status": "pass",
       "post_relax_min_distance_angstrom": 2.1291728709049975,
-      "post_relax_space_group": "R-3m",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_09d1c7004fe8_chgnet_relaxed.cif"
+      "post_relax_space_group": "R-3m"
     },
     {
       "rank": 8,
@@ -191,8 +184,7 @@
       "review_flags": [],
       "post_relax_audit_status": "pass",
       "post_relax_min_distance_angstrom": 2.171908675726023,
-      "post_relax_space_group": "R3m",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_e24c8c77c5a4_chgnet_relaxed.cif"
+      "post_relax_space_group": "R3m"
     },
     {
       "rank": 9,
@@ -207,8 +199,7 @@
       "review_flags": [],
       "post_relax_audit_status": "pass",
       "post_relax_min_distance_angstrom": 2.1020664427605045,
-      "post_relax_space_group": "R3m",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_7e59c7dae2e1_chgnet_relaxed.cif"
+      "post_relax_space_group": "R3m"
     },
     {
       "rank": 10,
@@ -223,8 +214,7 @@
       "review_flags": [],
       "post_relax_audit_status": "pass",
       "post_relax_min_distance_angstrom": 2.122771360443127,
-      "post_relax_space_group": "R3m",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_e12c99a3cbe3_chgnet_relaxed.cif"
+      "post_relax_space_group": "R3m"
     },
     {
       "rank": 11,
@@ -239,8 +229,7 @@
       "review_flags": [],
       "post_relax_audit_status": "pass",
       "post_relax_min_distance_angstrom": 2.137701038124417,
-      "post_relax_space_group": "R-3m",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_5d66d98b2e72_chgnet_relaxed.cif"
+      "post_relax_space_group": "R-3m"
     },
     {
       "rank": 12,
@@ -255,8 +244,7 @@
       "review_flags": [],
       "post_relax_audit_status": "pass",
       "post_relax_min_distance_angstrom": 2.185663025176793,
-      "post_relax_space_group": "P-3m1",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_b3d4dae0761d_chgnet_relaxed.cif"
+      "post_relax_space_group": "P-3m1"
     },
     {
       "rank": 13,
@@ -271,8 +259,7 @@
       "review_flags": [],
       "post_relax_audit_status": "pass",
       "post_relax_min_distance_angstrom": 2.0760993576762243,
-      "post_relax_space_group": "R3m",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_07c19a4f8993_chgnet_relaxed.cif"
+      "post_relax_space_group": "R3m"
     },
     {
       "rank": 14,
@@ -287,8 +274,7 @@
       "review_flags": [],
       "post_relax_audit_status": "pass",
       "post_relax_min_distance_angstrom": 2.151970972605256,
-      "post_relax_space_group": "R3m",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_2fdc7d189aea_chgnet_relaxed.cif"
+      "post_relax_space_group": "R3m"
     },
     {
       "rank": 15,
@@ -303,40 +289,51 @@
       "review_flags": [],
       "post_relax_audit_status": "pass",
       "post_relax_min_distance_angstrom": 2.1362192077362776,
-      "post_relax_space_group": "R3m",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_2bba2ed09193_chgnet_relaxed.cif"
+      "post_relax_space_group": "R3m"
     }
   ],
+  "candidate_cif_bundle": {
+    "schema_version": "dft_candidate_cif_bundle_v1",
+    "path": "../dft_validation/candidate_cifs/w_c_structural_validation_v1",
+    "manifest": "../dft_validation/candidate_cifs/w_c_structural_validation_v1/bundle_manifest.json",
+    "manifest_sha256": "116a9dad8dc4f5a47b4566e3282038e9aabf0db43c2e220e4b0f9b74d94b3fc2",
+    "file_count": 5
+  },
   "recommended_dft_queue": [
     {
       "rank": 1,
       "candidate_id": "camp_41a80c8b8b30",
       "formula": "Ti3NbWC5",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_41a80c8b8b30_chgnet_relaxed.cif"
+      "relaxed_cif": "../dft_validation/candidate_cifs/w_c_structural_validation_v1/camp_41a80c8b8b30_chgnet_relaxed.cif",
+      "relaxed_cif_sha256": "48b167049e7bb119b4f37454482521c73929a4a1673f57cae65230453f822c03"
     },
     {
       "rank": 2,
       "candidate_id": "camp_015e29be10e0",
       "formula": "Zr3TiWC5",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_015e29be10e0_chgnet_relaxed.cif"
+      "relaxed_cif": "../dft_validation/candidate_cifs/w_c_structural_validation_v1/camp_015e29be10e0_chgnet_relaxed.cif",
+      "relaxed_cif_sha256": "4bcbd8b9f3a92d0dc808fa095db519714f48be2dea1dcb04d8a7270808c66958"
     },
     {
       "rank": 3,
       "candidate_id": "camp_59538db42ea7",
       "formula": "Ti3VWC5",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_59538db42ea7_chgnet_relaxed.cif"
+      "relaxed_cif": "../dft_validation/candidate_cifs/w_c_structural_validation_v1/camp_59538db42ea7_chgnet_relaxed.cif",
+      "relaxed_cif_sha256": "d893058661af73b15d7a332d9327c5864a4d394707efd0858c7a2e699ea1e556"
     },
     {
       "rank": 4,
       "candidate_id": "camp_5e6d485d7147",
       "formula": "Zr3TaWC5",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_5e6d485d7147_chgnet_relaxed.cif"
+      "relaxed_cif": "../dft_validation/candidate_cifs/w_c_structural_validation_v1/camp_5e6d485d7147_chgnet_relaxed.cif",
+      "relaxed_cif_sha256": "179f1a225b08f8373123d4fb8e069c4c72e4ace73663925278b229cfdfc41a1a"
     },
     {
       "rank": 5,
       "candidate_id": "camp_436da3bac8cc",
       "formula": "Ti2VWC4",
-      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_436da3bac8cc_chgnet_relaxed.cif"
+      "relaxed_cif": "../dft_validation/candidate_cifs/w_c_structural_validation_v1/camp_436da3bac8cc_chgnet_relaxed.cif",
+      "relaxed_cif_sha256": "f222e7eaa8af9863b7ee7a3df70fd9997ef4e0400fd32f509ea2356b864bbbcb"
     }
   ],
   "scientific_limits": [
@@ -347,10 +344,10 @@
   ],
   "next_stage": "Run reproducible DFT relaxations for the recommended queue, then static energies and phase-diagram/convex-hull analysis before thermal-property screening.",
   "sources": {
-    "campaign_summary": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/campaign_summary.json",
-    "pre_relax_audit_summary": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/audit/structure_audit_summary.json",
-    "shortlist_summary": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/shortlist_top15_v1/shortlist_summary.json",
-    "relaxation_summary": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxation_summary.json",
-    "post_relax_audit_summary": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/post_relax_audit/structure_audit_summary.json"
+    "campaign_summary": "../generation/output/w_c_campaign_v1/campaign_summary.json",
+    "pre_relax_audit_summary": "../generation/output/w_c_campaign_v1/structures/audit/structure_audit_summary.json",
+    "shortlist_summary": "../generation/output/w_c_campaign_v1/structures/shortlist_top15_v1/shortlist_summary.json",
+    "relaxation_summary": "../generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxation_summary.json",
+    "post_relax_audit_summary": "../generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/post_relax_audit/structure_audit_summary.json"
   }
 }

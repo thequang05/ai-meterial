@@ -35,6 +35,21 @@ from compute_qe_hull import (
 INVENTORY_VERSION = "mp2019_reference_inventory_v1"
 
 
+def _ensure_fresh_output_dir(output_dir: Path) -> Path:
+    resolved = Path(output_dir).expanduser().resolve()
+    if resolved.exists() and not resolved.is_dir():
+        raise FileExistsError(f"Reference inventory output is not a directory: {resolved}")
+    if resolved.exists():
+        existing = sorted(entry.name for entry in resolved.iterdir())
+        if existing:
+            raise FileExistsError(
+                "Refusing to build a reference inventory in a non-empty output "
+                f"directory: {resolved}; existing={existing}"
+            )
+    resolved.mkdir(parents=True, exist_ok=True)
+    return resolved
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with Path(path).open("rb") as handle:
@@ -67,6 +82,7 @@ def build_inventory(
     materialize_cifs: bool = False,
     diagnostic_max_per_subsystem: int | None = None,
 ) -> dict[str, Any]:
+    output_dir = _ensure_fresh_output_dir(output_dir)
     if diagnostic_max_per_subsystem is not None and diagnostic_max_per_subsystem < 1:
         raise ValueError("diagnostic_max_per_subsystem must be positive")
     candidates = [
@@ -160,9 +176,7 @@ def build_inventory(
             raise ValueError(
                 "Current metadata/cache do not match the locked MP snapshot manifest"
             )
-        output_dir = Path(output_dir).resolve()
         cif_dir = output_dir / "cifs"
-        output_dir.mkdir(parents=True, exist_ok=True)
         if materialize_cifs:
             cif_dir.mkdir(parents=True, exist_ok=True)
 

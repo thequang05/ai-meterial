@@ -1,10 +1,11 @@
 """Prepare (but never execute) Quantum ESPRESSO jobs for validated candidates.
 
 The command always creates an auditable queue.  It emits ``vc-relax.in`` only
-when every required pseudopotential passes official-metadata, license,
-filename, cutoff, MD5/SHA-256, element, functional, and relativistic-header
-checks. Missing ``pw.x`` is reported as a blocker; this module never launches
-MPI or a DFT executable.
+when every required pseudopotential passes official-metadata verification and
+an independently confirmed convergence certificate passes full provenance
+verification. ``--convergence-source-only`` creates a deliberately
+non-runnable bootstrap queue. Missing ``pw.x`` is reported as a blocker; this
+module never launches MPI or a DFT executable.
 """
 
 from __future__ import annotations
@@ -25,12 +26,14 @@ from pymatgen.core import Composition, Structure
 from pymatgen.io.pwscf import PWInput
 
 from prepare_sssp_manifest import _inspect_upf_header, _normalize_expected_md5
+from qe_convergence_certificate import verify_convergence_certificate
 
 
 WORKFLOW_VERSION = "qe_pbe_candidate_relax_v1"
 PSEUDO_MANIFEST_VERSION = "qe_pseudo_manifest_v1"
 SAFE_JOB_ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}")
 SAFE_ENTRY_ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,255}")
+SHA256_RE = re.compile(r"[0-9a-f]{64}")
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -62,6 +65,8 @@ def _settings_hash(
     pseudo_manifest_path: Path,
     global_ecutwfc_ry: float,
     global_ecutrho_ry: float,
+    effective_kpoint_spacing_inv_angstrom: float,
+    convergence_certificate_payload_sha256: str | None = None,
 ) -> str:
     payload = {
         "workflow_version": WORKFLOW_VERSION,
@@ -69,6 +74,12 @@ def _settings_hash(
         "pseudo_manifest_sha256": _sha256(pseudo_manifest_path),
         "global_ecutwfc_ry": global_ecutwfc_ry,
         "global_ecutrho_ry": global_ecutrho_ry,
+        "effective_kpoint_spacing_inv_angstrom": (
+            effective_kpoint_spacing_inv_angstrom
+        ),
+        "convergence_certificate_payload_sha256": (
+            convergence_certificate_payload_sha256
+        ),
     }
     return hashlib.sha256(
         json.dumps(payload, sort_keys=True).encode("utf-8")
@@ -81,6 +92,100 @@ def _resolve_executable(value: str) -> str | None:
         candidate = candidate.resolve()
         return str(candidate) if candidate.is_file() and os.access(candidate, os.X_OK) else None
     return shutil.which(value)
+
+
+def _resolve_scratch_root(value: Path | None) -> Path | None:
+    """Create and return the absolute shared QE scratch root, when requested."""
+
+    if value is None:
+        return None
+    root = Path(value).expanduser().resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    if not root.is_dir():
+        raise NotADirectoryError(root)
+    return root
+
+
+def _ensure_fresh_output_dir(
+    output_dir: Path, *, allowed_existing_names: frozenset[str] = frozenset(),
+) -> Path:
+    """Fail closed when a preparer would mix artifacts from two campaigns."""
+
+    resolved = Path(output_dir).resolve()
+    if resolved.exists() and not resolved.is_dir():
+        raise FileExistsError(f"QE output path is not a directory: {resolved}")
+    existing_names = {entry.name for entry in resolved.iterdir()} if resolved.exists() else set()
+    unexpected = sorted(existing_names - set(allowed_existing_names))
+    if unexpected:
+        raise FileExistsError(
+            "Refusing to prepare QE jobs in a non-empty output directory: "
+            f"{resolved}; existing={unexpected}"
+        )
+    resolved.mkdir(parents=True, exist_ok=True)
+    return resolved
+
+
+def _qe_scratch_campaign_namespace(
+    *, workflow_version: str, output_dir: Path,
+) -> str:
+    """Return a stable namespace that separates independent campaigns."""
+
+    if not SAFE_JOB_ID_RE.fullmatch(workflow_version):
+        raise ValueError(f"Unsafe QE scratch workflow ID: {workflow_version!r}")
+    fingerprint = hashlib.sha256(
+        str(Path(output_dir).resolve()).encode("utf-8")
+    ).hexdigest()[:16]
+    return f"{workflow_version}/campaign_{fingerprint}"
+
+
+def _prepare_qe_scratch_campaign(
+    *, scratch_root: Path | None, campaign_namespace: str,
+) -> Path | None:
+    """Reserve a fresh scratch namespace and reject stale campaign state."""
+
+    if scratch_root is None:
+        return None
+    root = Path(scratch_root).resolve()
+    campaign_dir = (root / campaign_namespace).resolve()
+    if not campaign_dir.is_relative_to(root):
+        raise ValueError("QE scratch campaign escaped the requested root")
+    if campaign_dir.exists():
+        raise FileExistsError(
+            "Refusing to reuse an existing QE scratch campaign directory: "
+            f"{campaign_dir}"
+        )
+    campaign_dir.mkdir(parents=True)
+    return campaign_dir
+
+
+def _qe_scratch_outdir(
+    *, scratch_root: Path | None, campaign_namespace: str, job_id: str,
+) -> str:
+    """Return a collision-resistant QE ``outdir`` for one prepared job.
+
+    ``./tmp`` remains the default for backwards compatibility.  With an
+    explicit root, every job receives an absolute directory below the
+    campaign namespace so independent stages and reruns cannot reuse restart
+    files, even when their candidate IDs are identical.
+    """
+
+    if scratch_root is None:
+        return "./tmp"
+    if not SAFE_JOB_ID_RE.fullmatch(job_id):
+        raise ValueError(f"Unsafe QE scratch job ID: {job_id!r}")
+    namespace_parts = Path(campaign_namespace).parts
+    if len(namespace_parts) != 2 or any(
+        not SAFE_JOB_ID_RE.fullmatch(part) for part in namespace_parts
+    ):
+        raise ValueError(f"Unsafe QE scratch campaign namespace: {campaign_namespace!r}")
+    root = Path(scratch_root).resolve()
+    outdir = (root / campaign_namespace / job_id).resolve()
+    if not outdir.is_relative_to(root):
+        raise ValueError("QE scratch directory escaped the requested root")
+    if outdir.exists():
+        raise FileExistsError(f"Refusing to reuse a QE scratch job directory: {outdir}")
+    outdir.mkdir(parents=True)
+    return str(outdir)
 
 
 def _kpoint_grid(structure: Structure, spacing_inv_angstrom: float) -> tuple[int, int, int]:
@@ -185,6 +290,64 @@ def _candidate_queue(report: dict[str, Any], top_n: int) -> list[dict[str, Any]]
         candidate["entry_id"] = entry_id
         queue.append(candidate)
     return queue
+
+
+def _validate_candidate_bundle(
+    *, report: dict[str, Any], report_path: Path, queue: list[dict[str, Any]],
+) -> None:
+    """Verify the optional tracked CIF bundle and its queue-level hash locks."""
+
+    raw_bundle = report.get("candidate_cif_bundle")
+    if raw_bundle is None:
+        return
+    if not isinstance(raw_bundle, dict):
+        raise ValueError("candidate_cif_bundle must be an object")
+    manifest_text = str(raw_bundle.get("manifest") or "").strip()
+    expected_manifest_sha = str(
+        raw_bundle.get("manifest_sha256") or ""
+    ).strip().lower()
+    if not manifest_text or not SHA256_RE.fullmatch(expected_manifest_sha):
+        raise ValueError("Candidate CIF bundle manifest identity is incomplete")
+    manifest_path = Path(manifest_text).expanduser()
+    if not manifest_path.is_absolute():
+        manifest_path = report_path.parent / manifest_path
+    manifest_path = manifest_path.resolve()
+    if not manifest_path.is_file():
+        raise FileNotFoundError(manifest_path)
+    if _sha256(manifest_path) != expected_manifest_sha:
+        raise ValueError("Candidate CIF bundle manifest SHA-256 mismatch")
+    manifest = _load_json(manifest_path)
+    if manifest.get("schema_version") != "dft_candidate_cif_bundle_v1":
+        raise ValueError("Unsupported candidate CIF bundle manifest schema")
+    files = manifest.get("files")
+    if not isinstance(files, list) or manifest.get("file_count") != len(files):
+        raise ValueError("Candidate CIF bundle manifest inventory is malformed")
+    manifest_by_id: dict[str, dict[str, Any]] = {}
+    for row in files:
+        if not isinstance(row, dict):
+            raise ValueError("Candidate CIF bundle manifest row is malformed")
+        candidate_id = str(row.get("candidate_id") or "")
+        if candidate_id in manifest_by_id:
+            raise ValueError(f"Duplicate candidate in CIF bundle: {candidate_id}")
+        manifest_by_id[candidate_id] = row
+    for candidate in queue:
+        candidate_id = candidate["candidate_id"]
+        bundled = manifest_by_id.get(candidate_id)
+        expected_cif_sha = str(
+            candidate.get("relaxed_cif_sha256") or ""
+        ).strip().lower()
+        if bundled is None or not SHA256_RE.fullmatch(expected_cif_sha):
+            raise ValueError(
+                f"Candidate CIF bundle identity missing for {candidate_id}"
+            )
+        if (
+            str(bundled.get("sha256") or "").lower() != expected_cif_sha
+            or str(bundled.get("formula") or "") != str(candidate.get("formula") or "")
+            or int(bundled.get("rank", 0)) != int(candidate["rank"])
+        ):
+            raise ValueError(
+                f"Candidate CIF bundle/queue mismatch for {candidate_id}"
+            )
 
 
 def _validate_pseudopotentials(
@@ -355,7 +518,7 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         "formula", "job_status", "blockers",
         "required_elements", "kpoints_grid", "source_cif", "source_cif_sha256",
         "copied_cif", "qe_input", "qe_input_sha256", "qe_output",
-        "run_record", "job_record",
+        "run_record", "qe_scratch_outdir", "job_record",
     ]
     extras = sorted({key for row in rows for key in row} - set(preferred))
     fields = preferred + extras
@@ -374,17 +537,39 @@ def prepare_jobs(
     pseudo_manifest_path: Path | None = None,
     pseudo_dir: Path | None = None,
     pw_executable: str = "pw.x",
+    convergence_certificate_path: Path | None = None,
+    convergence_source_only: bool = False,
+    scratch_root: Path | None = None,
+    _allowed_existing_output_names: frozenset[str] = frozenset(),
 ) -> dict[str, Any]:
     if top_n < 1:
         raise ValueError("top_n must be at least 1")
+    if convergence_source_only and convergence_certificate_path is not None:
+        raise ValueError(
+            "--convergence-source-only and --convergence-certificate are mutually exclusive"
+        )
+    validation_report_path = Path(validation_report_path).expanduser().resolve()
     report = _load_json(validation_report_path)
     config = _load_json(config_path)
     _validate_config(config)
     queue = _candidate_queue(report, top_n)
+    _validate_candidate_bundle(
+        report=report, report_path=validation_report_path, queue=queue
+    )
 
-    output_dir = Path(output_dir).resolve()
+    output_dir = _ensure_fresh_output_dir(
+        output_dir, allowed_existing_names=_allowed_existing_output_names
+    )
     jobs_dir = output_dir / "jobs"
     bundled_pseudo_dir = output_dir / "pseudos"
+    resolved_scratch_root = _resolve_scratch_root(scratch_root)
+    scratch_campaign_namespace = _qe_scratch_campaign_namespace(
+        workflow_version=WORKFLOW_VERSION, output_dir=output_dir
+    )
+    scratch_campaign_dir = _prepare_qe_scratch_campaign(
+        scratch_root=resolved_scratch_root,
+        campaign_namespace=scratch_campaign_namespace,
+    )
     jobs_dir.mkdir(parents=True, exist_ok=True)
     config_source_path = Path(config_path).resolve()
     config_snapshot_path = output_dir / "workflow_config_snapshot.json"
@@ -393,9 +578,28 @@ def prepare_jobs(
     structures: list[tuple[dict[str, Any], Structure, Path]] = []
     required_elements_set: set[str] = set()
     for candidate in queue:
-        source_cif = Path(candidate["relaxed_cif"]).expanduser().resolve()
+        source_cif = Path(candidate["relaxed_cif"]).expanduser()
+        if not source_cif.is_absolute():
+            source_cif = validation_report_path.parent / source_cif
+        source_cif = source_cif.resolve()
         if not source_cif.is_file():
             raise FileNotFoundError(source_cif)
+        expected_source_sha = str(
+            candidate.get("relaxed_cif_sha256") or ""
+        ).strip().lower()
+        if expected_source_sha and not SHA256_RE.fullmatch(expected_source_sha):
+            raise ValueError(
+                "Invalid expected relaxed CIF SHA-256 for "
+                f"{candidate['candidate_id']}"
+            )
+        actual_source_sha = _sha256(source_cif)
+        if expected_source_sha and actual_source_sha != expected_source_sha:
+            raise ValueError(
+                f"Relaxed CIF SHA-256 mismatch for {candidate['candidate_id']}"
+            )
+        candidate["expected_relaxed_cif_sha256"] = (
+            expected_source_sha or actual_source_sha
+        )
         structure = Structure.from_file(source_cif)
         expected = Composition(candidate["formula"]).reduced_formula
         actual = structure.composition.reduced_formula
@@ -420,11 +624,11 @@ def prepare_jobs(
     engine_blockers = [] if executable_path else [f"pw_executable_not_found:{pw_executable}"]
     inputs_ready = not pseudo_blockers
 
-    global_ecutwfc = (
+    base_ecutwfc = (
         max(entry["ecutwfc_ry"] for entry in pseudo_entries.values())
         if inputs_ready else None
     )
-    global_ecutrho = (
+    base_ecutrho = (
         max(entry["ecutrho_ry"] for entry in pseudo_entries.values())
         if inputs_ready else None
     )
@@ -437,12 +641,39 @@ def prepare_jobs(
         pseudo_manifest_snapshot_path = output_dir / "pseudo_manifest_snapshot.json"
         shutil.copy2(Path(pseudo_manifest_path).resolve(), pseudo_manifest_snapshot_path)
 
+    certificate: dict[str, Any] | None = None
+    if inputs_ready and convergence_certificate_path is not None:
+        certificate = verify_convergence_certificate(
+            convergence_certificate_path,
+            required_elements=required_elements,
+            config_path=config_snapshot_path,
+            pseudo_manifest_path=pseudo_manifest_snapshot_path,
+            pw_executable_path=(Path(executable_path) if executable_path else None),
+        )
+    production_settings_certified = certificate is not None
+    if certificate is not None:
+        production = certificate["production_settings"]
+        global_ecutwfc = max(float(base_ecutwfc), float(production["ecutwfc_ry"]))
+        global_ecutrho = max(float(base_ecutrho), float(production["ecutrho_ry"]))
+        effective_kpoint_spacing = min(
+            float(config["kpoint_spacing_inv_angstrom"]),
+            float(production["kpoint_spacing_inv_angstrom"]),
+        )
+    else:
+        global_ecutwfc = base_ecutwfc
+        global_ecutrho = base_ecutrho
+        effective_kpoint_spacing = float(config["kpoint_spacing_inv_angstrom"])
+
     relax_settings_hash = (
         _settings_hash(
             config_path=config_snapshot_path,
             pseudo_manifest_path=pseudo_manifest_snapshot_path,
             global_ecutwfc_ry=float(global_ecutwfc),
             global_ecutrho_ry=float(global_ecutrho),
+            effective_kpoint_spacing_inv_angstrom=effective_kpoint_spacing,
+            convergence_certificate_payload_sha256=(
+                certificate["certificate_payload_sha256"] if certificate else None
+            ),
         )
         if inputs_ready and pseudo_manifest_snapshot_path is not None
         else None
@@ -461,17 +692,24 @@ def prepare_jobs(
         source_id = str(candidate.get("source_id") or candidate_id)
         job_dir = jobs_dir / f"{rank:02d}_{candidate_id}"
         job_dir.mkdir(parents=True, exist_ok=True)
+        qe_scratch_outdir = _qe_scratch_outdir(
+            scratch_root=resolved_scratch_root,
+            campaign_namespace=scratch_campaign_namespace,
+            job_id=f"{rank:02d}_{candidate_id}",
+        )
         copied_cif = job_dir / "input_chgnet_relaxed.cif"
         shutil.copy2(source_cif, copied_cif)
         qe_input_path = job_dir / "vc-relax.in"
         qe_output_path = job_dir / "vc-relax.out"
         run_record_path = job_dir / "job_run.json"
-        kgrid = _kpoint_grid(
-            structure, float(config["kpoint_spacing_inv_angstrom"])
-        )
+        kgrid = _kpoint_grid(structure, effective_kpoint_spacing)
 
-        blockers = list(pseudo_blockers) + list(engine_blockers)
-        if inputs_ready:
+        blockers = list(pseudo_blockers)
+        if inputs_ready and not production_settings_certified:
+            blockers.append("production_input_requires_convergence_certificate")
+        if production_settings_certified:
+            blockers.extend(engine_blockers)
+        if inputs_ready and production_settings_certified:
             pseudo_map = {
                 symbol: pseudo_entries[symbol]["filename"]
                 for symbol in sorted(
@@ -486,7 +724,7 @@ def prepare_jobs(
                     "restart_mode": "from_scratch",
                     "prefix": candidate_id,
                     "pseudo_dir": "../../pseudos",
-                    "outdir": "./tmp",
+                    "outdir": qe_scratch_outdir,
                     "disk_io": "low",
                     "tstress": True,
                     "tprnfor": True,
@@ -524,8 +762,12 @@ def prepare_jobs(
 
         job_status = (
             "runnable_not_started"
-            if inputs_ready and executable_path
+            if production_settings_certified and executable_path
             else "inputs_ready_engine_missing"
+            if production_settings_certified
+            else "convergence_source_only_not_runnable"
+            if inputs_ready and convergence_source_only
+            else "blocked_missing_convergence_certificate"
             if inputs_ready
             else "planned_waiting_for_pseudopotentials"
         )
@@ -541,14 +783,39 @@ def prepare_jobs(
             "blockers": blockers,
             "source_cif": str(source_cif),
             "source_cif_sha256": _sha256(source_cif),
+            "expected_source_cif_sha256": candidate[
+                "expected_relaxed_cif_sha256"
+            ],
             "copied_cif": str(copied_cif),
-            "qe_input": str(qe_input_path) if inputs_ready else "",
+            "qe_input": (
+                str(qe_input_path) if production_settings_certified else ""
+            ),
             "qe_input_sha256": qe_input_sha256,
             "qe_output": str(qe_output_path),
             "run_record": str(run_record_path),
+            "qe_scratch_outdir": qe_scratch_outdir,
             "kpoints_grid": list(kgrid),
             "ecutwfc_ry": global_ecutwfc,
             "ecutrho_ry": global_ecutrho,
+            "base_ecutwfc_ry": base_ecutwfc,
+            "base_ecutrho_ry": base_ecutrho,
+            "effective_kpoint_spacing_inv_angstrom": effective_kpoint_spacing,
+            "production_settings_certified": production_settings_certified,
+            "convergence_certificate": (
+                certificate["certificate_path"] if certificate else ""
+            ),
+            "convergence_certificate_sha256": (
+                certificate["certificate_sha256"] if certificate else ""
+            ),
+            "convergence_certificate_id": (
+                certificate["certificate_id"] if certificate else ""
+            ),
+            "convergence_certificate_payload_sha256": (
+                certificate["certificate_payload_sha256"] if certificate else ""
+            ),
+            "certified_execution_provenance": (
+                certificate["execution_provenance"] if certificate else None
+            ),
             "calculation_started": False,
             "dft_validated": False,
             "relax_settings_hash": relax_settings_hash,
@@ -573,8 +840,12 @@ def prepare_jobs(
     queue_manifest_sha256 = _sha256(queue_manifest_path)
     overall_status = (
         "runnable_not_started"
-        if inputs_ready and executable_path
+        if production_settings_certified and executable_path
         else "inputs_ready_engine_missing"
+        if production_settings_certified
+        else "convergence_source_only_not_runnable"
+        if inputs_ready and convergence_source_only
+        else "blocked_missing_convergence_certificate"
         if inputs_ready
         else "blocked_missing_pseudopotentials"
     )
@@ -583,7 +854,8 @@ def prepare_jobs(
         "status": overall_status,
         "calculation_started": False,
         "dft_validated_count": 0,
-        "validation_report": str(Path(validation_report_path).resolve()),
+        "validation_report": str(validation_report_path),
+        "validation_report_sha256": _sha256(validation_report_path),
         "source_inventory": report.get("source_inventory"),
         "source_inventory_sha256": report.get("source_inventory_sha256"),
         "config_source": str(config_source_path),
@@ -604,8 +876,56 @@ def prepare_jobs(
         "pw_executable_requested": pw_executable,
         "pw_executable_resolved": executable_path,
         "engine_blockers": engine_blockers,
+        "scratch_root": (
+            str(resolved_scratch_root) if resolved_scratch_root else None
+        ),
+        "scratch_layout": (
+            f"{scratch_campaign_namespace}/<job-id>"
+            if resolved_scratch_root else "job_local_tmp"
+        ),
+        "scratch_campaign_namespace": (
+            scratch_campaign_namespace if resolved_scratch_root else None
+        ),
+        "scratch_campaign_dir": (
+            str(scratch_campaign_dir) if scratch_campaign_dir else None
+        ),
         "global_ecutwfc_ry": global_ecutwfc,
         "global_ecutrho_ry": global_ecutrho,
+        "base_ecutwfc_ry": base_ecutwfc,
+        "base_ecutrho_ry": base_ecutrho,
+        "effective_kpoint_spacing_inv_angstrom": effective_kpoint_spacing,
+        "convergence_source_only": convergence_source_only,
+        "production_settings_certified": production_settings_certified,
+        "convergence_certificate": (
+            certificate["certificate_path"] if certificate else None
+        ),
+        "convergence_certificate_sha256": (
+            certificate["certificate_sha256"] if certificate else None
+        ),
+        "convergence_certificate_id": (
+            certificate["certificate_id"] if certificate else None
+        ),
+        "convergence_certificate_payload_sha256": (
+            certificate["certificate_payload_sha256"] if certificate else None
+        ),
+        "convergence_qe_program_version": (
+            certificate["qe_program_version"] if certificate else None
+        ),
+        "convergence_pw_executable_sha256": (
+            certificate["pw_executable_sha256"] if certificate else None
+        ),
+        "certified_execution_provenance": (
+            certificate["execution_provenance"] if certificate else None
+        ),
+        "confirmed_selected_settings": (
+            certificate["selected_settings"] if certificate else None
+        ),
+        "certified_production_settings": (
+            certificate["production_settings"] if certificate else None
+        ),
+        "production_settings_scope": (
+            certificate["production_settings_scope"] if certificate else None
+        ),
         "relax_settings_hash": relax_settings_hash,
         "relax_input_settings_hash": relax_settings_hash,
         "bundled_pseudopotentials": [
@@ -661,6 +981,21 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--pseudo-manifest", type=Path)
     parser.add_argument("--pseudo-dir", type=Path)
     parser.add_argument("--pw-executable", default="pw.x")
+    parser.add_argument(
+        "--scratch-root", type=Path,
+        help=(
+            "Optional shared QE scratch root. Each job uses a distinct "
+            "<workflow>/<campaign>/<job-id> directory; default is local ./tmp."
+        ),
+    )
+    parser.add_argument("--convergence-certificate", type=Path)
+    parser.add_argument(
+        "--convergence-source-only", action="store_true",
+        help=(
+            "Prepare a non-runnable, provenance-locked source queue for the "
+            "convergence sweep. No vc-relax input is emitted."
+        ),
+    )
     return parser
 
 
@@ -674,4 +1009,7 @@ if __name__ == "__main__":
         pseudo_manifest_path=args.pseudo_manifest,
         pseudo_dir=args.pseudo_dir,
         pw_executable=args.pw_executable,
+        convergence_certificate_path=args.convergence_certificate,
+        convergence_source_only=args.convergence_source_only,
+        scratch_root=args.scratch_root,
     )

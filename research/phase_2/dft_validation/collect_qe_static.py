@@ -21,6 +21,12 @@ from typing import Any
 from pymatgen.core import Composition, Structure
 
 from qe_output import summarize_qe_output
+from qe_convergence_certificate import verify_convergence_certificate
+from qe_execution_provenance import (
+    require_same_execution_provenance,
+    validate_execution_provenance,
+)
+from qe_output_directory import require_fresh_output_dir
 
 
 COLLECTOR_VERSION = "qe_static_collector_v1"
@@ -50,6 +56,14 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _energy_records_sha256(path: Path) -> str:
+    """Hash a canonical representation that can be rebuilt from the CSV."""
+
+    rows = _read_csv(path)
+    payload = json.dumps(rows, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 def _verify_static_input_hash(preflight: dict[str, Any]) -> str:
     payload = {
         "workflow_version": preflight["workflow_version"],
@@ -60,6 +74,12 @@ def _verify_static_input_hash(preflight: dict[str, Any]) -> str:
         ),
         "global_ecutwfc_ry": preflight["global_ecutwfc_ry"],
         "global_ecutrho_ry": preflight["global_ecutrho_ry"],
+        "effective_static_kpoint_spacing_inv_angstrom": preflight[
+            "effective_static_kpoint_spacing_inv_angstrom"
+        ],
+        "convergence_certificate_payload_sha256": preflight[
+            "convergence_certificate_payload_sha256"
+        ],
     }
     computed = hashlib.sha256(
         json.dumps(payload, sort_keys=True).encode("utf-8")
@@ -137,6 +157,10 @@ def _run_record_blockers(
         r"[0-9a-f]{64}", str(record.get("pw_executable_sha256") or "").lower()
     ):
         blockers.append("run_record_executable_hash_missing")
+    try:
+        validate_execution_provenance(record.get("execution_provenance"))
+    except ValueError:
+        blockers.append("run_record_execution_provenance_invalid")
     return blockers, record
 
 
@@ -146,7 +170,7 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         "formula", "composition_json", "num_atoms", "total_energy_ry",
         "total_energy_ev", "energy_ev_per_atom", "static_gate_status",
         "gate_failures", "static_input_settings_hash", "qe_program_version",
-        "pw_executable_sha256",
+        "pw_executable_sha256", "execution_provenance",
         "static_settings_hash", "qe_input", "qe_output",
         "source_cif_sha256", "relaxed_cif_sha256", "qe_output_sha256",
         "entry_lineage_sha256", "error",
@@ -164,6 +188,7 @@ def collect_static(
     preflight_path: Path,
     output_dir: Path,
 ) -> dict[str, Any]:
+    output_dir = require_fresh_output_dir(output_dir)
     preflight_path = Path(preflight_path).resolve()
     preflight_sha256 = _sha256(preflight_path)
     preflight = _load_json(preflight_path)
@@ -171,6 +196,21 @@ def collect_static(
         raise ValueError(f"Static preflight is not runnable: {preflight.get('status')}")
     if preflight.get("calculation") != "scf":
         raise ValueError("Expected a static preflight with calculation=scf")
+    if preflight.get("production_settings_certified") is not True:
+        raise ValueError("Static preflight is not convergence-certified")
+    certificate = verify_convergence_certificate(
+        Path(str(preflight.get("convergence_certificate") or "")),
+        required_elements=preflight.get("required_elements") or [],
+        config_path=Path(preflight["config"]),
+        pseudo_manifest_path=Path(preflight["pseudo_manifest"]),
+    )
+    if (
+        preflight.get("convergence_certificate_sha256")
+        != certificate["certificate_sha256"]
+        or preflight.get("convergence_certificate_payload_sha256")
+        != certificate["certificate_payload_sha256"]
+    ):
+        raise ValueError("Static preflight convergence-certificate lineage mismatch")
     input_settings_hash = _verify_static_input_hash(preflight)
     queue_path = Path(preflight["queue_manifest"]).resolve()
     expected_queue_sha = str(preflight.get("queue_manifest_sha256") or "")
@@ -178,7 +218,6 @@ def collect_static(
         raise ValueError("Queue manifest no longer matches the static preflight")
     queue = _read_csv(queue_path)
     common_provenance_failures = _bundled_pseudo_blockers(preflight)
-    output_dir = Path(output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
     rows: list[dict[str, Any]] = []
@@ -230,12 +269,32 @@ def collect_static(
             failures.append("electronic_convergence_failed")
         if parsed["fatal_error_detected"]:
             failures.append("fatal_qe_error_detected")
+        if parsed.get("last_scf_iteration_count") is None:
+            failures.append("electronic_convergence_marker_missing")
         program_version = str(parsed.get("program_version") or "").strip()
         if not program_version:
             failures.append("qe_program_version_missing")
         pw_executable_sha256 = str(
             (completed_run_record or {}).get("pw_executable_sha256") or ""
         ).lower()
+        if program_version != certificate["qe_program_version"]:
+            failures.append("qe_version_differs_from_convergence_certificate")
+        if pw_executable_sha256 != certificate["pw_executable_sha256"]:
+            failures.append("qe_executable_differs_from_convergence_certificate")
+        try:
+            execution = require_same_execution_provenance(
+                (completed_run_record or {}).get("execution_provenance"),
+                certificate["execution_provenance"],
+                label="convergence certificate",
+            )
+        except ValueError:
+            failures.append("execution_provenance_differs_from_convergence_certificate")
+            execution = None
+        if (
+            queue_row.get("convergence_certificate_payload_sha256")
+            != certificate["certificate_payload_sha256"]
+        ):
+            failures.append("queue_convergence_certificate_mismatch")
         effective_settings_hash = hashlib.sha256(
             json.dumps({
                 "static_input_settings_hash": input_settings_hash,
@@ -302,6 +361,9 @@ def collect_static(
                 "qe_input_sha256": qe_input_sha256,
                 "qe_output_sha256": qe_output_sha256,
                 "static_settings_hash": effective_settings_hash,
+                "convergence_certificate_payload_sha256": certificate[
+                    "certificate_payload_sha256"
+                ],
                 "pw_executable_sha256": pw_executable_sha256,
                 "total_energy_ry": energy_ry,
             }, sort_keys=True).encode("utf-8")
@@ -328,7 +390,14 @@ def collect_static(
             "static_input_settings_hash": input_settings_hash,
             "qe_program_version": program_version,
             "pw_executable_sha256": pw_executable_sha256,
+            "execution_provenance": (
+                json.dumps(execution, sort_keys=True) if execution else ""
+            ),
             "static_settings_hash": effective_settings_hash,
+            "convergence_certificate_id": certificate["certificate_id"],
+            "convergence_certificate_payload_sha256": certificate[
+                "certificate_payload_sha256"
+            ],
             "source_cif_sha256": source_cif_sha256,
             "relaxed_cif_sha256": relaxed_cif_sha256,
             "qe_input": str(qe_input),
@@ -348,9 +417,10 @@ def collect_static(
     manifest_path = output_dir / f"{stem}_energies.csv"
     _write_csv(manifest_path, rows)
     results_manifest_sha256 = _sha256(manifest_path)
-    energy_records_sha256 = hashlib.sha256(
-        json.dumps(rows, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    ).hexdigest()
+    # Derive the canonical-record digest from the serialized CSV, rather than
+    # from the in-memory Python values, so a downstream verifier can reproduce
+    # it byte-for-value after the collector process exits.
+    energy_records_sha256 = _energy_records_sha256(manifest_path)
     status_counts = Counter(row["static_gate_status"] for row in rows)
     converged_hashes = sorted({
         row["static_settings_hash"]
@@ -360,6 +430,13 @@ def collect_static(
     summary = {
         "collector_version": COLLECTOR_VERSION,
         "static_input_settings_hash": input_settings_hash,
+        "convergence_certificate": certificate["certificate_path"],
+        "convergence_certificate_sha256": certificate["certificate_sha256"],
+        "convergence_certificate_id": certificate["certificate_id"],
+        "convergence_certificate_payload_sha256": certificate[
+            "certificate_payload_sha256"
+        ],
+        "execution_provenance": certificate["execution_provenance"],
         "static_settings_hash": converged_hashes[0] if len(converged_hashes) == 1 else None,
         "static_settings_hashes": converged_hashes,
         "candidate_count": len(rows),

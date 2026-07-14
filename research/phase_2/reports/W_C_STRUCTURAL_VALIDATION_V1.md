@@ -45,11 +45,13 @@ Ghi chú: ΔE CHGNet chỉ so sánh trước/sau relax của **cùng một cấu
 
 ## Hàng đợi DFT đề xuất
 
-1. `Ti3NbWC5` — `camp_41a80c8b8b30` — `/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_41a80c8b8b30_chgnet_relaxed.cif`
-2. `Zr3TiWC5` — `camp_015e29be10e0` — `/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_015e29be10e0_chgnet_relaxed.cif`
-3. `Ti3VWC5` — `camp_59538db42ea7` — `/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_59538db42ea7_chgnet_relaxed.cif`
-4. `Zr3TaWC5` — `camp_5e6d485d7147` — `/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_5e6d485d7147_chgnet_relaxed.cif`
-5. `Ti2VWC4` — `camp_436da3bac8cc` — `/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_436da3bac8cc_chgnet_relaxed.cif`
+1. `Ti3NbWC5` — `camp_41a80c8b8b30` — `../dft_validation/candidate_cifs/w_c_structural_validation_v1/camp_41a80c8b8b30_chgnet_relaxed.cif` — SHA-256 `48b167049e7bb119b4f37454482521c73929a4a1673f57cae65230453f822c03`
+2. `Zr3TiWC5` — `camp_015e29be10e0` — `../dft_validation/candidate_cifs/w_c_structural_validation_v1/camp_015e29be10e0_chgnet_relaxed.cif` — SHA-256 `4bcbd8b9f3a92d0dc808fa095db519714f48be2dea1dcb04d8a7270808c66958`
+3. `Ti3VWC5` — `camp_59538db42ea7` — `../dft_validation/candidate_cifs/w_c_structural_validation_v1/camp_59538db42ea7_chgnet_relaxed.cif` — SHA-256 `d893058661af73b15d7a332d9327c5864a4d394707efd0858c7a2e699ea1e556`
+4. `Zr3TaWC5` — `camp_5e6d485d7147` — `../dft_validation/candidate_cifs/w_c_structural_validation_v1/camp_5e6d485d7147_chgnet_relaxed.cif` — SHA-256 `179f1a225b08f8373123d4fb8e069c4c72e4ace73663925278b229cfdfc41a1a`
+5. `Ti2VWC4` — `camp_436da3bac8cc` — `../dft_validation/candidate_cifs/w_c_structural_validation_v1/camp_436da3bac8cc_chgnet_relaxed.cif` — SHA-256 `f222e7eaa8af9863b7ee7a3df70fd9997ef4e0400fd32f509ea2356b864bbbcb`
+
+Năm CIF trên nằm trong bundle được theo dõi bởi Git; `bundle_manifest.json` và từng hàng đợi khóa nội dung bằng SHA-256. `prepare_qe_jobs.py` từ chối CIF bị thiếu hoặc sai hash trước khi dựng input QE.
 
 Thứ tự này kế thừa GNN screening sau khi mọi ứng viên đều qua cùng cổng CHGNet; nó là hàng đợi tính toán, không phải bảng xếp hạng độ bền nhiệt.
 

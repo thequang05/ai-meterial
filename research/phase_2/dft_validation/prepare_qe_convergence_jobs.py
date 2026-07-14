@@ -28,8 +28,13 @@ from pymatgen.io.pwscf import PWInput
 
 from prepare_qe_jobs import (
     SAFE_JOB_ID_RE,
+    _ensure_fresh_output_dir,
     _kpoint_grid,
+    _qe_scratch_outdir,
+    _qe_scratch_campaign_namespace,
+    _prepare_qe_scratch_campaign,
     _resolve_executable,
+    _resolve_scratch_root,
     _settings_hash,
     _sha256,
     _validate_config,
@@ -74,7 +79,7 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         "requested_kpoint_spacing_inv_angstrom", "kpoints_grid",
         "ecutwfc_ry", "ecutrho_ry", "source_cif", "source_cif_sha256",
         "copied_cif", "copied_cif_sha256", "qe_input", "qe_input_sha256",
-        "qe_output", "run_record", "convergence_settings_hash",
+        "qe_output", "run_record", "qe_scratch_outdir", "convergence_settings_hash",
         "job_status", "blockers", "job_record",
     ]
     extras = sorted({key for row in rows for key in row} - set(preferred))
@@ -232,9 +237,12 @@ def _verify_source_preflight(
     source_preflight_path = Path(source_preflight_path).resolve()
     preflight = _load_json(source_preflight_path)
     if preflight.get("status") not in {
-        "runnable_not_started", "inputs_ready_engine_missing",
-    }:
-        raise ValueError("Source candidate preflight has no verified QE inputs")
+        "convergence_source_only_not_runnable",
+        "blocked_missing_convergence_certificate",
+    } or preflight.get("production_settings_certified") is not False:
+        raise ValueError(
+            "Convergence requires a non-production bootstrap source preflight"
+        )
     if preflight.get("pseudo_blockers"):
         raise ValueError("Source candidate preflight has pseudopotential blockers")
     queue_path = Path(str(preflight.get("queue_manifest") or "")).resolve()
@@ -254,6 +262,14 @@ def _verify_source_preflight(
         pseudo_manifest_path=pseudo_manifest_path,
         global_ecutwfc_ry=base_wfc,
         global_ecutrho_ry=base_rho,
+        effective_kpoint_spacing_inv_angstrom=_finite_float(
+            preflight.get("effective_kpoint_spacing_inv_angstrom"),
+            "effective_kpoint_spacing_inv_angstrom",
+        ),
+        convergence_certificate_payload_sha256=(
+            str(preflight.get("convergence_certificate_payload_sha256") or "")
+            or None
+        ),
     )
     if expected_settings != preflight.get("relax_input_settings_hash"):
         raise ValueError("Source candidate preflight settings hash mismatch")
@@ -268,6 +284,7 @@ def prepare_convergence_jobs(
     output_dir: Path,
     pw_executable: str = "pw.x",
     diagnostic_allow_partial_element_coverage: bool = False,
+    scratch_root: Path | None = None,
 ) -> dict[str, Any]:
     if not representative_ids:
         raise ValueError("At least one explicit --candidate-id is required")
@@ -349,14 +366,18 @@ def prepare_convergence_jobs(
     if base_rho < base_wfc:
         raise ValueError("Source ecutrho must not be lower than ecutwfc")
 
-    output_dir = Path(output_dir).resolve()
-    if (output_dir / PREFLIGHT_NAME).exists():
-        raise FileExistsError(
-            f"Refusing to overwrite an existing convergence preflight: {output_dir}"
-        )
+    output_dir = _ensure_fresh_output_dir(output_dir)
     jobs_dir = output_dir / "jobs"
     representatives_dir = output_dir / "representatives"
     bundled_pseudo_dir = output_dir / "pseudos"
+    resolved_scratch_root = _resolve_scratch_root(scratch_root)
+    scratch_campaign_namespace = _qe_scratch_campaign_namespace(
+        workflow_version=WORKFLOW_VERSION, output_dir=output_dir
+    )
+    scratch_campaign_dir = _prepare_qe_scratch_campaign(
+        scratch_root=resolved_scratch_root,
+        campaign_namespace=scratch_campaign_namespace,
+    )
     for directory in (jobs_dir, representatives_dir, bundled_pseudo_dir):
         directory.mkdir(parents=True, exist_ok=True)
     config_snapshot = output_dir / "workflow_config_snapshot.json"
@@ -551,6 +572,11 @@ def prepare_convergence_jobs(
         point_id = point["point_id"]
         job_dir = jobs_dir / f"{int(point['rank']):03d}_{point_id}"
         job_dir.mkdir(parents=True, exist_ok=True)
+        qe_scratch_outdir = _qe_scratch_outdir(
+            scratch_root=resolved_scratch_root,
+            campaign_namespace=scratch_campaign_namespace,
+            job_id=f"{int(point['rank']):03d}_{point_id}",
+        )
         input_path = job_dir / "convergence-scf.in"
         output_path = job_dir / "convergence-scf.out"
         run_record = job_dir / "convergence_run.json"
@@ -563,7 +589,7 @@ def prepare_convergence_jobs(
                 "restart_mode": "from_scratch",
                 "prefix": point_id,
                 "pseudo_dir": "../../pseudos",
-                "outdir": "./tmp",
+                "outdir": qe_scratch_outdir,
                 "disk_io": "low",
                 "tstress": True,
                 "tprnfor": True,
@@ -610,6 +636,7 @@ def prepare_convergence_jobs(
             "qe_input_sha256": _sha256(input_path),
             "qe_output": str(output_path),
             "run_record": str(run_record),
+            "qe_scratch_outdir": qe_scratch_outdir,
             "convergence_settings_hash": settings_hash,
             "calculation_started": False,
         }
@@ -667,6 +694,19 @@ def prepare_convergence_jobs(
         "pw_executable_requested": pw_executable,
         "pw_executable_resolved": executable_path,
         "engine_blockers": engine_blockers,
+        "scratch_root": (
+            str(resolved_scratch_root) if resolved_scratch_root else None
+        ),
+        "scratch_layout": (
+            f"{scratch_campaign_namespace}/<job-id>"
+            if resolved_scratch_root else "job_local_tmp"
+        ),
+        "scratch_campaign_namespace": (
+            scratch_campaign_namespace if resolved_scratch_root else None
+        ),
+        "scratch_campaign_dir": (
+            str(scratch_campaign_dir) if scratch_campaign_dir else None
+        ),
         "resource_policy": source_preflight.get("resource_policy") or {},
         "queue_manifest": str(queue_path),
         "queue_manifest_sha256": _sha256(queue_path),
@@ -695,6 +735,13 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--pw-executable", default="pw.x")
     parser.add_argument(
+        "--scratch-root", type=Path,
+        help=(
+            "Optional shared QE scratch root. Each point uses a distinct "
+            "<workflow>/<campaign>/<job-id> directory; default is local ./tmp."
+        ),
+    )
+    parser.add_argument(
         "--diagnostic-allow-partial-element-coverage", action="store_true"
     )
     return parser
@@ -711,4 +758,5 @@ if __name__ == "__main__":
         diagnostic_allow_partial_element_coverage=(
             args.diagnostic_allow_partial_element_coverage
         ),
+        scratch_root=args.scratch_root,
     )

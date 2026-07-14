@@ -28,6 +28,11 @@ from prepare_qe_convergence_jobs import (
     validate_protocol,
 )
 from qe_output import summarize_qe_output
+from qe_execution_provenance import (
+    execution_identity,
+    validate_execution_provenance,
+)
+from qe_output_directory import require_fresh_output_dir
 
 
 COLLECTOR_VERSION = "qe_convergence_collector_v1"
@@ -334,6 +339,10 @@ def _run_record_blockers(
         str(record.get("pw_executable_sha256") or "").lower()
     ):
         blockers.append("run_record_executable_hash_missing")
+    try:
+        validate_execution_provenance(record.get("execution_provenance"))
+    except ValueError:
+        blockers.append("run_record_execution_provenance_invalid")
     return blockers, record
 
 
@@ -348,7 +357,8 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         "force_components_ev_per_angstrom", "stress_components_kbar",
         "point_within_tolerances", "stable_tail_from_this_level",
         "convergence_gate_status", "gate_failures", "qe_program_version",
-        "pw_executable_sha256", "qe_input_sha256", "qe_output_sha256",
+        "pw_executable_sha256", "execution_provenance",
+        "qe_input_sha256", "qe_output_sha256",
     ]
     extras = sorted({key for row in rows for key in row} - set(preferred))
     fields = preferred + extras
@@ -373,6 +383,7 @@ def _select_stable_tail(
 def collect_convergence(
     *, preflight_path: Path, output_dir: Path,
 ) -> dict[str, Any]:
+    output_dir = require_fresh_output_dir(output_dir)
     preflight_path = Path(preflight_path).resolve()
     preflight, preflight_sha, settings_hash = _verify_preflight(preflight_path)
     queue_path = Path(preflight["queue_manifest"]).resolve()
@@ -391,6 +402,7 @@ def collect_convergence(
     rows: list[dict[str, Any]] = []
     force_by_point: dict[str, list[list[float]]] = {}
     stress_by_point: dict[str, list[list[float]]] = {}
+    execution_by_point: dict[str, dict[str, Any]] = {}
     for queue_row in sorted(queue, key=lambda item: int(item["rank"])):
         point_id = queue_row["point_id"]
         canonical = canonical_points[point_id]
@@ -458,6 +470,13 @@ def collect_convergence(
         executable_sha = str(
             (run_record or {}).get("pw_executable_sha256") or ""
         ).lower()
+        try:
+            execution = validate_execution_provenance(
+                (run_record or {}).get("execution_provenance")
+            )
+            execution_by_point[point_id] = execution
+        except ValueError:
+            execution = None
         energy_ev_per_atom: float | str = ""
         if total_energy_ry is not None and math.isfinite(float(total_energy_ry)):
             energy_ev_per_atom = float(total_energy_ry) * RY_TO_EV / num_atoms
@@ -485,11 +504,13 @@ def collect_convergence(
             "gate_failures": json.dumps(sorted(set(failures))),
             "qe_program_version": program_version,
             "pw_executable_sha256": executable_sha,
+            "execution_provenance": (
+                json.dumps(execution, sort_keys=True) if execution else ""
+            ),
             "qe_input_sha256": _sha256(qe_input) if qe_input.is_file() else "",
             "qe_output_sha256": _sha256(qe_output) if qe_output.is_file() else "",
         })
 
-    output_dir = Path(output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     blocked = [row for row in rows if row["convergence_gate_status"] != "converged_output"]
     versions = {row["qe_program_version"] for row in rows if row["qe_program_version"]}
@@ -502,6 +523,17 @@ def collect_convergence(
         global_failures.append("mixed_or_missing_qe_versions")
     if len(executables) != 1:
         global_failures.append("mixed_or_missing_qe_executables")
+    execution_identities = {
+        json.dumps(execution_identity(value), sort_keys=True)
+        for value in execution_by_point.values()
+    }
+    if len(execution_by_point) != len(rows) or len(execution_identities) != 1:
+        global_failures.append("mixed_or_missing_execution_provenance")
+    common_execution = (
+        next(iter(execution_by_point.values()))
+        if len(execution_by_point) == len(rows) and len(execution_identities) == 1
+        else None
+    )
     protocol = preflight["protocol_values"]
     energy_tol = float(protocol["energy_tolerance_mev_per_atom"])
     force_tol = float(protocol["force_component_tolerance_ev_per_angstrom"])
@@ -629,6 +661,7 @@ def collect_convergence(
         "convergence_settings_hash": settings_hash,
         "qe_program_version": next(iter(versions)) if len(versions) == 1 else None,
         "pw_executable_sha256": next(iter(executables)) if len(executables) == 1 else None,
+        "execution_provenance": common_execution,
         "coverage_complete": preflight.get("coverage_complete") is True,
         "cutoff_window_converged": (
             None if blocked or global_failures else not needs_cutoff

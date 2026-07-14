@@ -19,6 +19,12 @@ from pymatgen.io.ase import AseAtomsAdaptor
 from pymatgen.io.cif import CifWriter
 
 from qe_output import summarize_qe_output
+from qe_convergence_certificate import verify_convergence_certificate
+from qe_execution_provenance import (
+    require_same_execution_provenance,
+    validate_execution_provenance,
+)
+from qe_output_directory import require_fresh_output_dir
 
 
 COLLECTOR_VERSION = "qe_relax_collector_v1"
@@ -56,6 +62,12 @@ def _settings_hash(preflight: dict[str, Any]) -> str:
         "pseudo_manifest_sha256": _sha256(pseudo_path),
         "global_ecutwfc_ry": preflight["global_ecutwfc_ry"],
         "global_ecutrho_ry": preflight["global_ecutrho_ry"],
+        "effective_kpoint_spacing_inv_angstrom": preflight[
+            "effective_kpoint_spacing_inv_angstrom"
+        ],
+        "convergence_certificate_payload_sha256": preflight[
+            "convergence_certificate_payload_sha256"
+        ],
     }
     computed = hashlib.sha256(
         json.dumps(payload, sort_keys=True).encode("utf-8")
@@ -133,6 +145,10 @@ def _run_record_blockers(
         r"[0-9a-f]{64}", str(record.get("pw_executable_sha256") or "").lower()
     ):
         blockers.append("run_record_executable_hash_missing")
+    try:
+        validate_execution_provenance(record.get("execution_provenance"))
+    except ValueError:
+        blockers.append("run_record_execution_provenance_invalid")
     return blockers, record
 
 
@@ -149,7 +165,7 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         "num_sites", "initial_source_cif_sha256", "final_cif",
         "final_cif_sha256", "qe_input", "qe_output",
         "relax_input_settings_hash", "qe_program_version",
-        "pw_executable_sha256", "settings_hash",
+        "pw_executable_sha256", "execution_provenance", "settings_hash",
         "error",
     ]
     extras = sorted({key for row in rows for key in row} - set(preferred))
@@ -165,11 +181,27 @@ def collect_relaxations(
     preflight_path: Path,
     output_dir: Path,
 ) -> dict[str, Any]:
+    output_dir = require_fresh_output_dir(output_dir)
     preflight_path = Path(preflight_path).resolve()
     preflight_sha256 = _sha256(preflight_path)
     preflight = _load_json(preflight_path)
     if preflight.get("status") != "runnable_not_started":
         raise ValueError(f"Preflight is not runnable: {preflight.get('status')}")
+    if preflight.get("production_settings_certified") is not True:
+        raise ValueError("Relax preflight is not convergence-certified")
+    certificate = verify_convergence_certificate(
+        Path(str(preflight.get("convergence_certificate") or "")),
+        required_elements=preflight.get("required_elements") or [],
+        config_path=Path(preflight["config"]),
+        pseudo_manifest_path=Path(preflight["pseudo_manifest"]),
+    )
+    if (
+        preflight.get("convergence_certificate_sha256")
+        != certificate["certificate_sha256"]
+        or preflight.get("convergence_certificate_payload_sha256")
+        != certificate["certificate_payload_sha256"]
+    ):
+        raise ValueError("Relax preflight convergence-certificate lineage mismatch")
     config = _load_json(Path(preflight["config"]))
     queue_path = Path(preflight["queue_manifest"]).resolve()
     expected_queue_sha = str(preflight.get("queue_manifest_sha256") or "")
@@ -178,7 +210,6 @@ def collect_relaxations(
     queue = _read_csv(queue_path)
     input_settings_hash = _settings_hash(preflight)
     common_provenance_failures = _bundled_pseudo_blockers(preflight)
-    output_dir = Path(output_dir).resolve()
     cif_dir = output_dir / "relaxed_cifs"
     cif_dir.mkdir(parents=True, exist_ok=True)
 
@@ -222,6 +253,8 @@ def collect_relaxations(
             failures.append("electronic_convergence_failed")
         if parsed["fatal_error_detected"]:
             failures.append("fatal_qe_error_detected")
+        if parsed.get("last_scf_iteration_count") is None:
+            failures.append("electronic_convergence_marker_missing")
         if not parsed.get("ionic_converged_marker", False):
             failures.append("ionic_convergence_marker_missing")
         program_version = str(parsed.get("program_version") or "").strip()
@@ -230,6 +263,19 @@ def collect_relaxations(
         pw_executable_sha256 = str(
             (completed_run_record or {}).get("pw_executable_sha256") or ""
         ).lower()
+        if program_version != certificate["qe_program_version"]:
+            failures.append("qe_version_differs_from_convergence_certificate")
+        if pw_executable_sha256 != certificate["pw_executable_sha256"]:
+            failures.append("qe_executable_differs_from_convergence_certificate")
+        try:
+            execution = require_same_execution_provenance(
+                (completed_run_record or {}).get("execution_provenance"),
+                certificate["execution_provenance"],
+                label="convergence certificate",
+            )
+        except ValueError:
+            failures.append("execution_provenance_differs_from_convergence_certificate")
+            execution = None
         effective_settings_hash = hashlib.sha256(
             json.dumps({
                 "relax_input_settings_hash": input_settings_hash,
@@ -374,12 +420,20 @@ def collect_relaxations(
             "relax_input_settings_hash": input_settings_hash,
             "qe_program_version": program_version,
             "pw_executable_sha256": pw_executable_sha256,
+            "execution_provenance": (
+                json.dumps(execution, sort_keys=True) if execution else ""
+            ),
             "settings_hash": effective_settings_hash,
+            "convergence_certificate_id": certificate["certificate_id"],
+            "convergence_certificate_payload_sha256": certificate[
+                "certificate_payload_sha256"
+            ],
             "error": error,
         })
 
     manifest_path = output_dir / "qe_relaxation_results.csv"
     _write_csv(manifest_path, rows)
+    results_manifest_sha256 = _sha256(manifest_path)
     status_counts = Counter(row["relax_gate_status"] for row in rows)
     converged_hashes = sorted({
         row["settings_hash"]
@@ -388,7 +442,18 @@ def collect_relaxations(
     })
     summary = {
         "collector_version": COLLECTOR_VERSION,
+        "source_preflight": str(preflight_path),
+        "source_preflight_sha256": preflight_sha256,
+        "source_queue_manifest": str(queue_path),
+        "source_queue_manifest_sha256": expected_queue_sha,
         "relax_input_settings_hash": input_settings_hash,
+        "convergence_certificate": certificate["certificate_path"],
+        "convergence_certificate_sha256": certificate["certificate_sha256"],
+        "convergence_certificate_id": certificate["certificate_id"],
+        "convergence_certificate_payload_sha256": certificate[
+            "certificate_payload_sha256"
+        ],
+        "execution_provenance": certificate["execution_provenance"],
         "settings_hash": converged_hashes[0] if len(converged_hashes) == 1 else None,
         "settings_hashes": converged_hashes,
         "candidate_count": len(rows),
@@ -396,6 +461,7 @@ def collect_relaxations(
         "dft_relax_converged_count": status_counts.get("dft_relax_converged", 0),
         "thermodynamically_validated_count": 0,
         "results_manifest": str(manifest_path),
+        "results_manifest_sha256": results_manifest_sha256,
         "scientific_limit": (
             "A converged DFT relaxation validates the local geometry only. "
             "Static energies and competing-phase convex-hull calculations remain required."

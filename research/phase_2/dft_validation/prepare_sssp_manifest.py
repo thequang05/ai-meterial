@@ -92,6 +92,11 @@ def create_manifest(
     metadata_path = Path(metadata_path).resolve()
     pseudo_dir = Path(pseudo_dir).resolve()
     output_path = Path(output_path).resolve()
+    if output_path.exists():
+        raise FileExistsError(
+            "Refusing to overwrite an existing locked SSSP manifest: "
+            f"{output_path}"
+        )
     if not metadata_path.is_file():
         raise FileNotFoundError(metadata_path)
     if not pseudo_dir.is_dir():
