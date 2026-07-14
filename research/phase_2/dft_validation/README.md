@@ -105,6 +105,14 @@ automatic downloader is included. Merely running unit tests does not invoke
   PBE/scalar-relativistic headers, cutoffs, and records SHA-256.
 - `prepare_qe_jobs.py`: writes candidate `vc-relax` inputs only after the UPFs
   pass verification.
+- `prepare_qe_convergence_jobs.py`: creates a sparse static-SCF cutoff-pair and
+  k-grid sweep on explicitly selected representative structures. The checked-in
+  v1 protocol uses eight points per representative instead of a full 4 x 5
+  Cartesian grid. It never runs QE.
+- `collect_qe_convergence.py`: verifies the locked provenance, parses
+  component-wise energy/force/stress changes, applies a stable-tail rule, and
+  reports the worst-case setting across representatives. Its result is
+  deliberately provisional and cannot serve as a production certificate.
 - `run_qe_jobs.py`: dry-run by default; `--execute` is mandatory, execution is
   sequential, local resources are capped, and a timeout terminates the full
   MPI process group.
@@ -163,6 +171,62 @@ plan-only artifact.
   --top-n 5 \
   --output-dir research/phase_2/generation/output/w_c_campaign_v1/dft_qe_top5_v2
 ```
+
+Before launching those relaxation inputs, prepare the sparse convergence study.
+The three representatives below cover the complete element union
+`C,Ti,V,Zr,Nb,Ta,W` in the current five-candidate report. If the report changes,
+choose explicit IDs again; preparation fails closed when their union does not
+cover every element in the source queue.
+
+```bash
+.conda/bin/python research/phase_2/dft_validation/prepare_qe_convergence_jobs.py \
+  --source-preflight research/phase_2/generation/output/w_c_campaign_v1/dft_qe_top5_v2/dft_preflight.json \
+  --candidate-id camp_41a80c8b8b30 \
+  --candidate-id camp_59538db42ea7 \
+  --candidate-id camp_5e6d485d7147 \
+  --protocol research/phase_2/dft_validation/qe_convergence_protocol_v1.json \
+  --pw-executable /absolute/path/pw.x \
+  --output-dir research/phase_2/generation/output/w_c_campaign_v1/qe_convergence_v1
+```
+
+This creates 24 static SCF points (eight per representative). Inspect the plan
+first; no executable is resolved or launched without `--execute`:
+
+```bash
+.conda/bin/python research/phase_2/dft_validation/run_qe_jobs.py \
+  --preflight research/phase_2/generation/output/w_c_campaign_v1/qe_convergence_v1/convergence_preflight.json \
+  --max-jobs 1 --mpi-ranks 2 --omp-threads 1
+```
+
+At home, after QE exists, repeat this explicit command until all 24 points have
+a bound completed run record:
+
+```bash
+.conda/bin/python research/phase_2/dft_validation/run_qe_jobs.py \
+  --preflight research/phase_2/generation/output/w_c_campaign_v1/qe_convergence_v1/convergence_preflight.json \
+  --execute --max-jobs 1 --mpi-ranks 2 --omp-threads 1 \
+  --timeout-seconds 21600
+```
+
+Then collect the tested window:
+
+```bash
+.conda/bin/python research/phase_2/dft_validation/collect_qe_convergence.py \
+  --preflight research/phase_2/generation/output/w_c_campaign_v1/qe_convergence_v1/convergence_preflight.json \
+  --output-dir research/phase_2/generation/output/w_c_campaign_v1/qe_convergence_v1/collected
+```
+
+Interpret the status strictly:
+
+- `blocked_incomplete_or_failed_runs`: complete or repair failed points;
+- `needs_higher_cutoff`: extend the cutoff window;
+- `needs_denser_kpoint_grid`: extend the grid window;
+- `provisional_selection_ready`: the sparse sweep found a candidate setting,
+  but an independent selected-combination confirmation is still mandatory.
+
+The collector always writes `certificate_eligible=false` and
+`confirmation_required=true`. Do not manually copy provisional values into
+production inputs. Confirmation/certificate integration is the next code gate.
 
 First inspect a dry plan; this does not resolve or launch MPI:
 

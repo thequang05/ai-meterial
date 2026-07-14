@@ -87,7 +87,8 @@ def _provenance_blockers(
 
 def _settings_hash_from_preflight(preflight: dict[str, Any]) -> str:
     return str(
-        preflight.get("static_settings_hash")
+        preflight.get("convergence_settings_hash")
+        or preflight.get("static_settings_hash")
         or preflight.get("relax_input_settings_hash")
         or preflight.get("relax_settings_hash")
         or ""
