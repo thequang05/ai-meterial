@@ -1,0 +1,30 @@
+{
+  "checkpoint": "/Users/koiita/Downloads/ai-meterial/research/phase_2/models/gnn_formation_energy_model.pt",
+  "split_manifest": "research/phase_2/data/splits/materials_broad_v1_seed42.json",
+  "test_count": 13342,
+  "overall": {
+    "mae_ev_per_atom": 0.19572327292297945,
+    "rmse_ev_per_atom": 0.28385702133149304,
+    "r2": 0.9415624325049287
+  },
+  "by_num_atoms": {
+    "1-16": {
+      "mae_ev_per_atom": 0.21532634758220207,
+      "rmse_ev_per_atom": 0.33480991589209114,
+      "r2": 0.9173027740635357,
+      "count": 5830
+    },
+    "17-64": {
+      "mae_ev_per_atom": 0.18160305539328514,
+      "rmse_ev_per_atom": 0.23906758842900902,
+      "r2": 0.9458294193458123,
+      "count": 5929
+    },
+    "65+": {
+      "mae_ev_per_atom": 0.17641363582272018,
+      "rmse_ev_per_atom": 0.2284801562619959,
+      "r2": 0.9476336685201854,
+      "count": 1583
+    }
+  }
+}

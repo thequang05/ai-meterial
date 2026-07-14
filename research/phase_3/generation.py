@@ -45,7 +45,12 @@ warnings.filterwarnings("ignore", message="Site labels are not unique")
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 load_dotenv(_PROJECT_ROOT / ".env")
 _PHASE_3 = Path(__file__).resolve().parent
-RAW_JSON = _PROJECT_ROOT / "dataset" / "materials_project" / "mp.2019.04.01.json"
+# The raw Materials Project snapshot is stored in the repository's data
+# directory.  Older notebooks used dataset/materials_project/; keep that
+# location as a backwards-compatible fallback for older checkouts.
+_RAW_JSON_PRIMARY = _PROJECT_ROOT / "data" / "mp.2019.04.01.json"
+_RAW_JSON_LEGACY = _PROJECT_ROOT / "dataset" / "materials_project" / "mp.2019.04.01.json"
+RAW_JSON = _RAW_JSON_PRIMARY if _RAW_JSON_PRIMARY.exists() else _RAW_JSON_LEGACY
 CACHE_DB = _PHASE_3 / "cache" / "structures.sqlite"
 DEFAULT_OUTPUT = _PHASE_3 / "output"
 DEFAULT_LMSTUDIO_URL = "http://192.168.1.47:1234"
@@ -242,7 +247,10 @@ def run(args: argparse.Namespace) -> None:
     cif_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = Path(args.output) / "manifest.csv"
 
-    build_structure_cache(force=args.rebuild_cache)
+    cached = build_structure_cache(force=args.rebuild_cache)
+    if args.build_cache_only:
+        print(f"Structure cache ready: {cached:,} structures -> {CACHE_DB}")
+        return
     conn = sqlite3.connect(CACHE_DB)
 
     # Prototype uids: explicit --uids override, else ask the LLM (+ Neo4j MCP).
@@ -337,6 +345,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
                    help="LM Studio MCP plugin id from mcp.json (e.g. mcp/thanhhoa-materials).")
     p.add_argument("--rebuild-cache", action="store_true",
                    help="Force-rebuild the structure sqlite cache.")
+    p.add_argument("--build-cache-only", action="store_true",
+                   help="Build/verify the structure cache, then exit without generating candidates.")
     return p
 
 

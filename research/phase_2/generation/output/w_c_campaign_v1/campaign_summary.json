@@ -1,0 +1,141 @@
+{
+  "schema_version": "generation_campaign_v1",
+  "campaign_status": "complete",
+  "campaign_config_sha256": "6141348ca07ff6664a421536b515ec1e69c6c0b42c838c82c943cd74c256d492",
+  "config": {
+    "schema_version": "generation_campaign_v1",
+    "requirement": "stable refractory tungsten carbide candidate",
+    "max_energy": 0.0,
+    "min_energy": null,
+    "include_elements": [
+      "W",
+      "C"
+    ],
+    "only_elements": [],
+    "domain_filter": "refractory_carbide_v1",
+    "allowed_elements": [],
+    "limit": 10,
+    "seeds": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "n_samples_per_seed": 100,
+    "per_seed_top_k": 100,
+    "global_top_k": 50,
+    "interpolate": true,
+    "perturb_scale": 0.5,
+    "vae_checkpoint": {
+      "path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/models/vae_model.pt",
+      "size_bytes": 3989306,
+      "sha256": "e46c9ef1cfd38c9c5914df6e139d6228b504c5cec0abcc68088849862a56631e"
+    },
+    "gnn_checkpoint": {
+      "path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/models/gnn_formation_energy_grouped_v1.pt",
+      "size_bytes": 253979,
+      "sha256": "72bf0af9c2aae500bf5764d5588e4d64befdc7367b9e578894f7ccba3ce2d889"
+    }
+  },
+  "successful_seed_count": 5,
+  "failed_seeds": [],
+  "empty_seeds": [],
+  "seed_results": [
+    {
+      "seed": 42,
+      "n_retrieved": 10,
+      "n_manifest_candidates": 14,
+      "chemistry_passed": 14,
+      "elapsed_seconds": 28.4
+    },
+    {
+      "seed": 43,
+      "n_retrieved": 10,
+      "n_manifest_candidates": 11,
+      "chemistry_passed": 11,
+      "elapsed_seconds": 30.6
+    },
+    {
+      "seed": 44,
+      "n_retrieved": 10,
+      "n_manifest_candidates": 13,
+      "chemistry_passed": 13,
+      "elapsed_seconds": 30.3
+    },
+    {
+      "seed": 45,
+      "n_retrieved": 10,
+      "n_manifest_candidates": 19,
+      "chemistry_passed": 19,
+      "elapsed_seconds": 29.7
+    },
+    {
+      "seed": 46,
+      "n_retrieved": 10,
+      "n_manifest_candidates": 17,
+      "chemistry_passed": 17,
+      "elapsed_seconds": 28.9
+    }
+  ],
+  "prototype_set_consistent_across_seeds": true,
+  "total_latent_samples_decoded": 500,
+  "chemistry_pass_count": 74,
+  "emitted_manifest_occurrence_count": 74,
+  "unique_pre_cif_hypothesis_count": 44,
+  "unique_reduced_formula_count": 35,
+  "exact_duplicate_occurrences_removed": 30,
+  "same_formula_structural_variants_retained": 9,
+  "prototype_diversity_count": 8,
+  "chemical_system_diversity_count": 17,
+  "chemical_systems": [
+    "C-Cr-Ta-Ti-W",
+    "C-Mo-Nb-W",
+    "C-Mo-Ta-W",
+    "C-Mo-Ti-W",
+    "C-Mo-V-W",
+    "C-Mo-W",
+    "C-Nb-Ta-W",
+    "C-Nb-Ti-W",
+    "C-Nb-W",
+    "C-Ta-Ti-W",
+    "C-Ta-V-W",
+    "C-Ta-W",
+    "C-Ta-W-Zr",
+    "C-Ti-V-W",
+    "C-Ti-W",
+    "C-Ti-W-Zr",
+    "C-W-Zr"
+  ],
+  "chemistry_rejection_counts": {
+    "unchanged_from_prototype": 256,
+    "known_composition": 116,
+    "outside_allowed_domain:U": 2,
+    "duplicate_reduced_formula_and_site_count": 43,
+    "outside_allowed_domain:Cd": 1,
+    "outside_allowed_domain:Lu": 1,
+    "outside_allowed_domain:Al": 3,
+    "outside_allowed_domain:Sc": 1,
+    "outside_allowed_domain:Ag": 1,
+    "outside_allowed_domain:Re": 1,
+    "outside_allowed_domain:Mg": 1
+  },
+  "chemistry_pass_yield": 0.148,
+  "manifest_yield": 0.148,
+  "unique_hypothesis_yield": 0.088,
+  "unique_formula_yield": 0.07,
+  "gnn_energy_statistics_ev_per_atom": {
+    "min": -0.5504,
+    "median": -0.20295000000000002,
+    "max": 0.2488
+  },
+  "global_shortlist_count": 35,
+  "dedup_policy": {
+    "pre_cif_exact_key": "reduced_formula+num_atoms+prototype_uid+canonical_site_substitutions",
+    "composition_grouping": "reduced_formula (reporting/shortlist only)",
+    "post_cif_required": "StructureMatcher before final structural dedup"
+  },
+  "next_manifest_for_cif_build": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/campaign_generation_manifest.csv",
+  "runner_failed_seeds": [],
+  "campaign_wall_time_seconds": 164.6
+}

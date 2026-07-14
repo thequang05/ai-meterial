@@ -65,9 +65,18 @@ from generator import (
     random_perturb_latent, decode_and_validate, build_pyg_data,
     GNN_MODEL_PATH, GRAPH_PATH,
 )
+from chemistry_validator import ChemicalValidator
 
 DEFAULT_OUTPUT = _PROJECT_ROOT / "research" / "phase_2" / "generation" / "output"
 DEFAULT_VAE_PATH = _PROJECT_ROOT / "research" / "phase_2" / "models" / "vae_model.pt"
+MATERIALS_CSV = _PROJECT_ROOT / "research" / "phase_2" / "data" / "processed" / "materials.csv"
+
+# A deliberately strict chemistry envelope for refractory *carbides*.  Borides,
+# nitrides, oxides, and halides are separate material families and should use a
+# separately justified profile rather than being silently mixed into this one.
+REFRACTORY_CARBIDE_V1_ELEMENTS = frozenset({
+    "C", "Ti", "Zr", "Hf", "V", "Nb", "Ta", "Cr", "Mo", "W",
+})
 
 
 # ── Data classes ────────────────────────────────────────────────────────────────
@@ -83,12 +92,19 @@ class GenerationConfig:
     perturb_scale: float = 0.5
     edge_threshold: float = 0.5
     top_k: int = 10
-    latent_dim: int = 32
-    atom_emb_dim: int = 64
-    hidden_dim: int = 128
-    num_layers: int = 3
-    kl_weight: float = 0.01
-    node_weight: float = 1.0
+    latent_dim: int = 64
+    atom_emb_dim: int = 96
+    hidden_dim: int = 192
+    num_layers: int = 4
+    kl_weight: float = 0.2
+    node_weight: float = 5.0
+    node_temperature: float = 0.7
+    node_mask_rate: float = 0.30
+    required_elements: list[str] = field(default_factory=list)
+    allowed_elements: list[str] | None = None
+    domain_filter: str | None = None
+    chemistry_filter_summary: dict = field(default_factory=dict)
+    seed: int = 42
 
 
 @dataclass
@@ -112,6 +128,8 @@ class Candidate:
     gnn_formation_energy: float
     generation_method: str  # "vae_interpolation" | "vae_perturbation" | "pymatgen_substitution"
     latent_alpha: float = 0.0
+    oxidation_states: dict | None = None
+    substitutions: list[dict] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return {
@@ -124,6 +142,11 @@ class Candidate:
             "gnn_formation_energy": self.gnn_formation_energy,
             "generation_method": self.generation_method,
             "latent_alpha": self.latent_alpha,
+            "oxidation_states": json.dumps(self.oxidation_states, sort_keys=True) if self.oxidation_states else "",
+            "substitutions_json": json.dumps(self.substitutions, sort_keys=True),
+            "num_substitutions": len(self.substitutions),
+            "structure_status": "not_built",
+            "cif_path": "",
         }
 
 
@@ -228,6 +251,10 @@ def run_generation(
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"  Device: {device}")
+    torch.manual_seed(config.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(config.seed)
+    print(f"  Generation seed: {config.seed}")
 
     # Check for trained VAE checkpoint.
     if not config.vae_checkpoint.exists():
@@ -245,12 +272,16 @@ def run_generation(
         num_layers=config.num_layers,
         kl_weight=config.kl_weight,
         node_weight=config.node_weight,
+        edge_pos_weight=5.0,
     )
     vae_model = load_vae(config.vae_checkpoint, vae_args, device)
-    gnn = load_gnn(device)
+    gnn = load_gnn(device, config.gnn_checkpoint)
 
     print(f"  Loaded VAE (latent_dim={config.latent_dim}) from {config.vae_checkpoint}")
     print(f"  Loaded GNN from {config.gnn_checkpoint}")
+    if config.allowed_elements:
+        print(f"  Candidate domain ({config.domain_filter or 'custom'}): "
+              f"{','.join(sorted(config.allowed_elements))}")
 
     # Encode prototypes.
     graphs_all = torch.load(config.graph_data_path, weights_only=False)
@@ -305,7 +336,11 @@ def run_generation(
     z = torch.cat(z_list[:config.n_samples], dim=0).to(device)
     print(f"\n  Decoding {z.size(0)} latent vectors ...")
 
-    # Decode + GNN scoring.
+    print("  Building known-composition index for novelty screening ...")
+    chemical_validator = ChemicalValidator.from_materials_csv(MATERIALS_CSV)
+    print(f"  Known reduced compositions: {len(chemical_validator.known_compositions):,}")
+
+    # Decode → chemistry screen → GNN scoring.
     raw_candidates = decode_and_validate(
         model=vae_model,
         gnn=gnn,
@@ -314,13 +349,18 @@ def run_generation(
         prototype_graphs=prototype_graphs,
         edge_threshold=config.edge_threshold,
         top_k_gnn=config.top_k,
+        node_temperature=config.node_temperature,
+        node_mask_rate=config.node_mask_rate,
+        required_elements=config.required_elements,
+        allowed_elements=config.allowed_elements,
+        chemical_validator=chemical_validator,
+        filter_summary=config.chemistry_filter_summary,
     )
 
     # Wrap in Candidate objects.
     candidates = []
     for i, raw in enumerate(raw_candidates):
-        ref = prototype_graphs[i % len(prototype_graphs)] if prototype_graphs else None
-        ref_uid = retrieval.uids[i % len(retrieval.uids)] if retrieval.uids else "unknown"
+        ref_uid = raw.get("prototype_uid", "unknown")
         ref_mat = next((m for m in retrieval.materials if m["uid"] == ref_uid), {})
         candidates.append(Candidate(
             candidate_id=raw.get("candidate_id", f"gen_{uuid.uuid4().hex[:8]}"),
@@ -332,6 +372,8 @@ def run_generation(
             gnn_formation_energy=raw.get("gnn_formation_energy", 0.0),
             generation_method="vae_interpolation" if config.interpolate else "vae_perturbation",
             latent_alpha=raw.get("latent_alpha", i / max(len(raw_candidates) - 1, 1)),
+            oxidation_states=raw.get("oxidation_states"),
+            substitutions=raw.get("substitutions", []),
         ))
 
     # Sort by formation energy (most stable first).
@@ -409,7 +451,7 @@ def run_validation(
         print(f"[WARNING] GNN checkpoint not found — candidates passed through without re-scoring.")
         return candidates
 
-    gnn = load_gnn(device)
+    gnn = load_gnn(device, config.gnn_checkpoint)
     print(f"  GNN loaded from {config.gnn_checkpoint}")
 
     # All candidates are already scored by GNN in Phase 2.
@@ -477,6 +519,19 @@ def run_pipeline(
     print("=" * 70)
     print(f"  Requirement: {requirement}")
     print(f"  Filters: max_energy={max_energy}, include_elements={include_elements}")
+    if generation_config.domain_filter:
+        print(f"  Candidate domain filter: {generation_config.domain_filter}")
+    effective_only_elements = only_elements
+    if effective_only_elements is None and generation_config.allowed_elements:
+        # A candidate-only filter cannot recover a useful result when every
+        # prototype is an oxyhalide or salt.  Use the same chemistry envelope
+        # for retrieval unless the caller explicitly supplies a narrower one.
+        effective_only_elements = generation_config.allowed_elements
+        print("  Retrieval chemical system inherited from candidate domain filter: "
+              f"{','.join(sorted(effective_only_elements))}")
+    if generation_config.domain_filter == "refractory_carbide_v1" and max_energy is not None and max_energy < 0.0:
+        print("  [NOTE] max_energy < 0.0 may exclude experimentally stable carbides; "
+              "use 0.0 for the first carbide retrieval audit.")
     print(f"  Device: {device}")
 
     # Phase 1: Retrieval.
@@ -484,7 +539,7 @@ def run_pipeline(
         max_energy=max_energy,
         min_energy=min_energy,
         include_elements=include_elements,
-        only_elements=only_elements,
+        only_elements=effective_only_elements,
         limit=limit,
     )
 
@@ -513,7 +568,9 @@ def run_pipeline(
             fh,
             fieldnames=["candidate_id", "formula", "prototype_uid", "prototype_formula",
                         "num_atoms", "num_edges", "gnn_formation_energy",
-                        "generation_method", "latent_alpha"],
+                        "generation_method", "latent_alpha", "oxidation_states",
+                        "substitutions_json", "num_substitutions",
+                        "structure_status", "cif_path"],
         )
         writer.writeheader()
         writer.writerows([c.to_dict() for c in validated])
@@ -522,11 +579,18 @@ def run_pipeline(
         "requirement": requirement,
         "phase": "generation",
         "n_retrieved": len(retrieval.materials),
+        "retrieved_uids": retrieval.uids,
         "n_generated": len(candidates),
         "n_validated": len(validated),
+        "n_samples_requested": generation_config.n_samples,
+        "top_k": generation_config.top_k,
         "target_energy": max_energy,
         "include_elements": include_elements,
-        "only_elements": only_elements,
+        "only_elements": effective_only_elements,
+        "domain_filter": generation_config.domain_filter,
+        "allowed_elements": sorted(generation_config.allowed_elements or []),
+        "chemistry_filter_summary": generation_config.chemistry_filter_summary,
+        "generation_seed": generation_config.seed,
         "retrieval_stats": retrieval.energy_range,
         "top_candidates": [c.to_dict() for c in validated[:5]],
         "elapsed_seconds": round(time.time() - t_start, 1),
@@ -558,6 +622,15 @@ def build_arg_parser() -> argparse.ArgumentParser:
                    help="Comma-separated required elements, e.g. O,N.")
     p.add_argument("--only-elements", type=lambda s: [e.strip() for e in s.split(",")],
                    help="Restrict to chemical system, e.g. Li,Fe,O.")
+    domain_group = p.add_mutually_exclusive_group()
+    domain_group.add_argument(
+        "--domain-filter", choices=["refractory_carbide_v1"],
+        help="Apply a validated chemistry envelope to generated candidates.",
+    )
+    domain_group.add_argument(
+        "--allowed-elements", type=lambda s: [e.strip() for e in s.split(",") if e.strip()],
+        help="Custom generated-candidate element allow-list, e.g. C,Ti,Zr,Hf,Nb,Ta,Mo,W.",
+    )
     p.add_argument("--limit", type=int, default=10,
                    help="Max known materials to retrieve.")
     p.add_argument("--phase", type=int, choices=[1, 2, 3],
@@ -566,6 +639,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
                    help="Output directory.")
     p.add_argument("--vae-checkpoint", default=str(DEFAULT_VAE_PATH),
                    help="Path to trained VAE checkpoint.")
+    p.add_argument("--gnn-checkpoint", default=str(GNN_MODEL_PATH),
+                   help="Audited formation-energy GNN checkpoint.")
     p.add_argument("--n-samples", type=int, default=20,
                    help="Number of latent vectors to sample.")
     p.add_argument("--interpolate", action="store_true", default=True,
@@ -576,18 +651,33 @@ def build_arg_parser() -> argparse.ArgumentParser:
                    help="Gaussian noise scale for perturbation.")
     p.add_argument("--top-k", type=int, default=10,
                    help="Return only top-k validated candidates.")
+    p.add_argument("--seed", type=int, default=42,
+                   help="Random seed for reproducible latent decoding and deduplication.")
     return p
 
 
 def main() -> None:
     args = build_arg_parser().parse_args()
 
+    allowed_elements = args.allowed_elements
+    if args.domain_filter == "refractory_carbide_v1":
+        allowed_elements = sorted(REFRACTORY_CARBIDE_V1_ELEMENTS)
+    # Apply a profile's chemistry envelope consistently to retrieval-only and
+    # generation-only invocations too.  An explicit --only-elements remains
+    # the caller's narrower override.
+    effective_only_elements = args.only_elements or allowed_elements
+
     config = GenerationConfig(
         vae_checkpoint=Path(args.vae_checkpoint),
+        gnn_checkpoint=Path(args.gnn_checkpoint),
         n_samples=args.n_samples,
         interpolate=args.interpolate,
         perturb_scale=args.perturb_scale,
         top_k=args.top_k,
+        required_elements=args.include_elements or [],
+        allowed_elements=allowed_elements,
+        domain_filter=args.domain_filter,
+        seed=args.seed,
     )
 
     if args.phase == 1:
@@ -595,7 +685,7 @@ def main() -> None:
             max_energy=args.max_energy,
             min_energy=args.min_energy,
             include_elements=args.include_elements,
-            only_elements=args.only_elements,
+            only_elements=effective_only_elements,
             limit=args.limit,
         )
         print(f"\nRetrieved {len(result.materials)} materials.")
@@ -608,7 +698,7 @@ def main() -> None:
             max_energy=args.max_energy,
             min_energy=args.min_energy,
             include_elements=args.include_elements,
-            only_elements=args.only_elements,
+            only_elements=effective_only_elements,
             limit=args.limit,
         )
         candidates = run_generation(
@@ -623,7 +713,7 @@ def main() -> None:
             max_energy=args.max_energy,
             min_energy=args.min_energy,
             include_elements=args.include_elements,
-            only_elements=args.only_elements,
+            only_elements=effective_only_elements,
             limit=args.limit,
             generation_config=config,
             output_dir=Path(args.output),

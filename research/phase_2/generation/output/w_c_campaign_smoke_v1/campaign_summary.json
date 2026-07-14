@@ -1,0 +1,94 @@
+{
+  "schema_version": "generation_campaign_v1",
+  "campaign_status": "complete",
+  "campaign_config_sha256": "da49246eee402eff59942f25ce4e9ac69bfa190367b2c556b0738689fd60c75a",
+  "config": {
+    "schema_version": "generation_campaign_v1",
+    "requirement": "stable refractory tungsten carbide candidate",
+    "max_energy": 0.0,
+    "min_energy": null,
+    "include_elements": [
+      "W",
+      "C"
+    ],
+    "only_elements": [],
+    "domain_filter": "refractory_carbide_v1",
+    "allowed_elements": [],
+    "limit": 5,
+    "seeds": [
+      42,
+      43
+    ],
+    "n_samples_per_seed": 5,
+    "per_seed_top_k": 5,
+    "global_top_k": 10,
+    "interpolate": true,
+    "perturb_scale": 0.5,
+    "vae_checkpoint": {
+      "path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/models/vae_model.pt",
+      "size_bytes": 3989306,
+      "sha256": "e46c9ef1cfd38c9c5914df6e139d6228b504c5cec0abcc68088849862a56631e"
+    },
+    "gnn_checkpoint": {
+      "path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/models/gnn_formation_energy_grouped_v1.pt",
+      "size_bytes": 253979,
+      "sha256": "72bf0af9c2aae500bf5764d5588e4d64befdc7367b9e578894f7ccba3ce2d889"
+    }
+  },
+  "successful_seed_count": 2,
+  "failed_seeds": [],
+  "empty_seeds": [
+    43
+  ],
+  "seed_results": [
+    {
+      "seed": 42,
+      "n_retrieved": 5,
+      "n_manifest_candidates": 1,
+      "chemistry_passed": 1,
+      "elapsed_seconds": 30.6
+    },
+    {
+      "seed": 43,
+      "n_retrieved": 5,
+      "n_manifest_candidates": 0,
+      "chemistry_passed": 0,
+      "elapsed_seconds": 27.9
+    }
+  ],
+  "prototype_set_consistent_across_seeds": true,
+  "total_latent_samples_decoded": 10,
+  "chemistry_pass_count": 1,
+  "emitted_manifest_occurrence_count": 1,
+  "unique_pre_cif_hypothesis_count": 1,
+  "unique_reduced_formula_count": 1,
+  "exact_duplicate_occurrences_removed": 0,
+  "same_formula_structural_variants_retained": 0,
+  "prototype_diversity_count": 1,
+  "chemical_system_diversity_count": 1,
+  "chemical_systems": [
+    "C-Ti-W"
+  ],
+  "chemistry_rejection_counts": {
+    "unchanged_from_prototype": 6,
+    "known_composition": 3
+  },
+  "chemistry_pass_yield": 0.1,
+  "manifest_yield": 0.1,
+  "unique_hypothesis_yield": 0.1,
+  "unique_formula_yield": 0.1,
+  "gnn_energy_statistics_ev_per_atom": {
+    "min": -0.4651,
+    "median": -0.4651,
+    "max": -0.4651
+  },
+  "global_shortlist_count": 1,
+  "dedup_policy": {
+    "pre_cif_exact_key": "reduced_formula+num_atoms+prototype_uid+canonical_site_substitutions",
+    "composition_grouping": "reduced_formula (reporting/shortlist only)",
+    "post_cif_required": "StructureMatcher before final structural dedup"
+  },
+  "next_manifest_for_cif_build": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_smoke_v1/campaign_generation_manifest.csv",
+  "runner_failed_seeds": [],
+  "campaign_wall_time_seconds": 0.0
+}

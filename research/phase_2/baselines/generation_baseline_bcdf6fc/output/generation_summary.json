@@ -1,0 +1,59 @@
+{
+  "requirement": "material that can withstand 1500C and is non-conductive",
+  "phase": "generation",
+  "n_retrieved": 10,
+  "n_generated": 3,
+  "n_validated": 3,
+  "target_energy": -1.5,
+  "include_elements": [
+    "O"
+  ],
+  "only_elements": null,
+  "retrieval_stats": {
+    "count": 65173,
+    "min": -4.612092007715515,
+    "max": 4.14457699725,
+    "mean": -2.2003823911628264,
+    "p05": -3.3549790521357146,
+    "p25": -2.7050077540625,
+    "median": -2.2961284983149994,
+    "p75": -1.7507694508928568,
+    "p95": -0.7920757823625013
+  },
+  "top_candidates": [
+    {
+      "candidate_id": "bucket_4476c7",
+      "formula": "(interpolated CdGeO3 ↔ MgCoO3)",
+      "prototype_uid": "MP_mp-1016903",
+      "prototype_formula": "CdGeO3",
+      "num_atoms": 5,
+      "num_edges": 250,
+      "gnn_formation_energy": -1.48599874175,
+      "generation_method": "bucket_interpolation",
+      "latent_alpha": 0.5
+    },
+    {
+      "candidate_id": "bucket_56495d",
+      "formula": "(interpolated RbMgO3 ↔ YbCdO3)",
+      "prototype_uid": "MP_mp-1186884",
+      "prototype_formula": "RbMgO3",
+      "num_atoms": 5,
+      "num_edges": 154,
+      "gnn_formation_energy": -1.4751351982844831,
+      "generation_method": "bucket_interpolation",
+      "latent_alpha": 0.5
+    },
+    {
+      "candidate_id": "bucket_321d32",
+      "formula": "(interpolated Cr2NiO4 ↔ Ni2GeO4)",
+      "prototype_uid": "MP_mp-19303",
+      "prototype_formula": "Cr2NiO4",
+      "num_atoms": 14,
+      "num_edges": 640,
+      "gnn_formation_energy": -1.646422670357143,
+      "generation_method": "bucket_interpolation",
+      "latent_alpha": 0.5
+    }
+  ],
+  "elapsed_seconds": 6.6
+}

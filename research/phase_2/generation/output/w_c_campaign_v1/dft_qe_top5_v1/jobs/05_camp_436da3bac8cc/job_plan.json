@@ -1,0 +1,25 @@
+{
+  "workflow_version": "qe_pbe_candidate_relax_v1",
+  "rank": 5,
+  "candidate_id": "camp_436da3bac8cc",
+  "formula": "Ti2VWC4",
+  "job_status": "planned_waiting_for_pseudopotentials",
+  "blockers": [
+    "pseudo_manifest_not_provided",
+    "pw_executable_not_found:pw.x"
+  ],
+  "source_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_436da3bac8cc_chgnet_relaxed.cif",
+  "source_cif_sha256": "f222e7eaa8af9863b7ee7a3df70fd9997ef4e0400fd32f509ea2356b864bbbcb",
+  "copied_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/dft_qe_top5_v1/jobs/05_camp_436da3bac8cc/input_chgnet_relaxed.cif",
+  "qe_input": "",
+  "kpoints_grid": [
+    13,
+    12,
+    4
+  ],
+  "ecutwfc_ry": null,
+  "ecutrho_ry": null,
+  "calculation_started": false,
+  "dft_validated": false,
+  "scientific_limit": "Prepared input only. No Quantum ESPRESSO calculation has been run."
+}

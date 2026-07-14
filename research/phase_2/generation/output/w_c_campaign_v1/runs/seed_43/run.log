@@ -1,0 +1,96 @@
+
+======================================================================
+  PHASE 2 GENERATION PIPELINE — 'stable refractory tungsten carbide candidate'
+======================================================================
+  Requirement: stable refractory tungsten carbide candidate
+  Filters: max_energy=0.0, include_elements=['W', 'C']
+  Candidate domain filter: refractory_carbide_v1
+  Device: cpu
+
+============================================================
+PHASE 1: RETRIEVAL — querying Neo4j knowledge graph
+============================================================
+  Dataset stats: 153 materials, energy range [-2.266, 1.432] eV/atom, median=-0.163
+
+  Retrieved 10 known materials:
+    MP_mp-1217128             Ti4WC5          E_form=-0.650 eV/atom
+    MP_mp-1217115             Ti3WC4          E_form=-0.608 eV/atom
+    MP_mp-1215364             Zr4WC5          E_form=-0.607 eV/atom
+    MP_mp-1224191             HfWC2           E_form=-0.423 eV/atom
+    MP_mp-1217819             TaTiWC3         E_form=-0.413 eV/atom
+    ... and 5 more
+
+  Found 5 interpolation groups (compatible graph topologies for generation)
+
+============================================================
+PHASE 2: GENERATION — Graph VAE from prototype materials
+============================================================
+  Device: cpu
+  Generation seed: 43
+  Loaded VAE (latent_dim=64) from /Users/koiita/Downloads/ai-meterial/research/phase_2/models/vae_model.pt
+  Loaded GNN from /Users/koiita/Downloads/ai-meterial/research/phase_2/models/gnn_formation_energy_grouped_v1.pt
+  Candidate domain (refractory_carbide_v1): C,Cr,Hf,Mo,Nb,Ta,Ti,V,W,Zr
+  Encoded: MP_mp-1217128 (Ti4WC5)  E=-0.650
+  Encoded: MP_mp-1217115 (Ti3WC4)  E=-0.608
+  Encoded: MP_mp-1215364 (Zr4WC5)  E=-0.607
+  Encoded: MP_mp-1224191 (HfWC2)  E=-0.423
+  Encoded: MP_mp-1217819 (TaTiWC3)  E=-0.413
+  Encoded: MP_mp-1218023 (Ta4WC5)  E=-0.399
+  Encoded: MP_mp-1216690 (TiWC2)  E=-0.393
+  Encoded: MP_mp-1215167 (ZrWC2)  E=-0.351
+  Encoded: MP_mp-1220459 (Nb4WC5)  E=-0.282
+  Encoded: MP_mp-1216466 (V4WC5)  E=-0.272
+
+  Decoding 100 latent vectors ...
+  Building known-composition index for novelty screening ...
+/Users/koiita/Downloads/ai-meterial/.conda/lib/python3.11/functools.py:1001: UserWarning: No Pauling electronegativity for Ne. Setting to NaN. This has no physical meaning, and is mainly done to avoid errors caused by the code expecting a float.
+  val = self.func(instance)
+/Users/koiita/Downloads/ai-meterial/.conda/lib/python3.11/functools.py:1001: UserWarning: No Pauling electronegativity for He. Setting to NaN. This has no physical meaning, and is mainly done to avoid errors caused by the code expecting a float.
+  val = self.func(instance)
+/Users/koiita/Downloads/ai-meterial/.conda/lib/python3.11/functools.py:1001: UserWarning: No Pauling electronegativity for Ar. Setting to NaN. This has no physical meaning, and is mainly done to avoid errors caused by the code expecting a float.
+  val = self.func(instance)
+  Known reduced compositions: 95,647
+  Chemistry screen: accepted 11/100; rejected 89 {'unchanged_from_prototype': 52, 'known_composition': 26, 'duplicate_reduced_formula_and_site_count': 10, 'outside_allowed_domain:Cd': 1}
+
+  Generated 11 candidates:
+    cand_43d3569c: Ti3NbWC5              E_form=-0.533  from Ti4WC5
+    cand_66dcd1d2: Ti2WC3                E_form=-0.465  from TaTiWC3
+    cand_df041b39: Ta3MoWC5              E_form=-0.304  from Ta4WC5
+    cand_29bff0aa: Ta3W2C5               E_form=-0.254  from Ta4WC5
+    cand_71b5e162: Ti2MoW2C5             E_form=-0.212  from Ti4WC5
+    ... and 6 more
+
+============================================================
+PHASE 3: VALIDATION — GNN scoring and ranking
+============================================================
+  GNN loaded from /Users/koiita/Downloads/ai-meterial/research/phase_2/models/gnn_formation_energy_grouped_v1.pt
+
+  Filtering 11 candidates ...
+  Stable candidates (E_form < 0.5 eV/atom): 11
+
+  Top 5 most stable candidates:
+    1. Ti3NbWC5              E_form=-0.5329  method=vae_interpolation
+    2. Ti2WC3                E_form=-0.4651  method=vae_interpolation
+    3. Ta3MoWC5              E_form=-0.3042  method=vae_interpolation
+    4. Ta3W2C5               E_form=-0.2537  method=vae_interpolation
+    5. Ti2MoW2C5             E_form=-0.2119  method=vae_interpolation
+
+  Results saved:
+    Manifest: /Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/runs/seed_43/generation_manifest.csv
+    Summary:  /Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/runs/seed_43/generation_summary.json
+  Total time: 30.6s
+
+============================================================
+FINAL RESULT: 11 validated candidates
+============================================================
+  1. Ti3NbWC5              E_form=-0.5329 eV/atom  method=vae_interpolation
+  2. Ti2WC3                E_form=-0.4651 eV/atom  method=vae_interpolation
+  3. Ta3MoWC5              E_form=-0.3042 eV/atom  method=vae_interpolation
+  4. Ta3W2C5               E_form=-0.2537 eV/atom  method=vae_interpolation
+  5. Ti2MoW2C5             E_form=-0.2119 eV/atom  method=vae_interpolation
+  6. NbWC2                 E_form=-0.1514 eV/atom  method=vae_interpolation
+  7. Nb3W2C5               E_form=-0.1356 eV/atom  method=vae_interpolation
+  8. Ta2MoW2C5             E_form=-0.1249 eV/atom  method=vae_interpolation
+  9. TiMoW3C5              E_form=-0.0577 eV/atom  method=vae_interpolation
+  10. TaW2C3                E_form=-0.0344 eV/atom  method=vae_interpolation
+  11. MoW2C3                E_form=0.2485 eV/atom  method=vae_interpolation

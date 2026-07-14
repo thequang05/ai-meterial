@@ -1,0 +1,33 @@
+{
+  "schema_version": "generation_campaign_v1",
+  "requirement": "stable refractory tungsten carbide candidate",
+  "max_energy": 0.0,
+  "min_energy": null,
+  "include_elements": [
+    "W",
+    "C"
+  ],
+  "only_elements": [],
+  "domain_filter": "refractory_carbide_v1",
+  "allowed_elements": [],
+  "limit": 5,
+  "seeds": [
+    42,
+    43
+  ],
+  "n_samples_per_seed": 5,
+  "per_seed_top_k": 5,
+  "global_top_k": 10,
+  "interpolate": true,
+  "perturb_scale": 0.5,
+  "vae_checkpoint": {
+    "path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/models/vae_model.pt",
+    "size_bytes": 3989306,
+    "sha256": "e46c9ef1cfd38c9c5914df6e139d6228b504c5cec0abcc68088849862a56631e"
+  },
+  "gnn_checkpoint": {
+    "path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/models/gnn_formation_energy_grouped_v1.pt",
+    "size_bytes": 253979,
+    "sha256": "72bf0af9c2aae500bf5764d5588e4d64befdc7367b9e578894f7ccba3ce2d889"
+  }
+}

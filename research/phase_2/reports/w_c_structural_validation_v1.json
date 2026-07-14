@@ -1,0 +1,356 @@
+{
+  "report_version": "w_c_structural_validation_v1",
+  "status": "ml_structural_validation_complete",
+  "funnel": {
+    "latent_samples": 500,
+    "chemistry_pass_occurrences": 74,
+    "unique_pre_cif_hypotheses": 44,
+    "cifs_built": 44,
+    "geometry_ready_pre_relax": 44,
+    "structurematcher_unique_pre_relax": 38,
+    "unique_formula_representatives": 35,
+    "selected_for_chgnet": 15,
+    "chgnet_converged": 15,
+    "post_relax_geometry_pass": 15,
+    "dft_validated": 0,
+    "thermal_validated": 0
+  },
+  "campaign": {
+    "seeds": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "chemistry_pass_yield": 0.148,
+    "unique_hypothesis_yield": 0.088,
+    "unique_formula_yield": 0.07,
+    "exact_duplicate_occurrences_removed": 30
+  },
+  "pre_relax_audit": {
+    "status_counts": {
+      "pass": 38,
+      "warn": 6
+    },
+    "structurematcher_equivalent_count": 6,
+    "structure_matcher_settings": {
+      "ltol": 0.2,
+      "stol": 0.3,
+      "angle_tol": 5.0
+    }
+  },
+  "chgnet": {
+    "model_name": "0.3.0",
+    "model_version": "0.3.0",
+    "fmax_ev_per_angstrom": 0.05,
+    "max_steps": 500,
+    "relax_cell": true,
+    "status_counts": {
+      "converged": 15
+    },
+    "max_final_force_ev_per_angstrom": 0.04790382148873868,
+    "volume_change_percent_range": {
+      "min": -4.699137863126198,
+      "max": 3.240921403966574
+    },
+    "energy_change_ev_per_atom_range": {
+      "min": -0.04410839080810547,
+      "max": -0.0028667449951171875
+    }
+  },
+  "post_relax_audit": {
+    "status_counts": {
+      "pass": 15
+    },
+    "structurally_unique_count": 15
+  },
+  "selected_candidates": [
+    {
+      "rank": 1,
+      "candidate_id": "camp_41a80c8b8b30",
+      "formula": "Ti3NbWC5",
+      "gnn_formation_energy_ev_per_atom": -0.5504,
+      "chgnet_relaxation_status": "converged",
+      "chgnet_energy_change_ev_per_atom": -0.015923500061035156,
+      "final_max_force_ev_per_angstrom": 0.0432810343348597,
+      "volume_change_percent": 2.331913441106844,
+      "trajectory_frame_count": 26,
+      "review_flags": [],
+      "post_relax_audit_status": "pass",
+      "post_relax_min_distance_angstrom": 2.1492808341920937,
+      "post_relax_space_group": "R3m",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_41a80c8b8b30_chgnet_relaxed.cif"
+    },
+    {
+      "rank": 2,
+      "candidate_id": "camp_015e29be10e0",
+      "formula": "Zr3TiWC5",
+      "gnn_formation_energy_ev_per_atom": -0.5457,
+      "chgnet_relaxation_status": "converged",
+      "chgnet_energy_change_ev_per_atom": -0.04410839080810547,
+      "final_max_force_ev_per_angstrom": 0.04704377391763955,
+      "volume_change_percent": -4.699137863126198,
+      "trajectory_frame_count": 27,
+      "review_flags": [],
+      "post_relax_audit_status": "pass",
+      "post_relax_min_distance_angstrom": 2.1932169905630263,
+      "post_relax_space_group": "R3m",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_015e29be10e0_chgnet_relaxed.cif"
+    },
+    {
+      "rank": 3,
+      "candidate_id": "camp_59538db42ea7",
+      "formula": "Ti3VWC5",
+      "gnn_formation_energy_ev_per_atom": -0.5225,
+      "chgnet_relaxation_status": "converged",
+      "chgnet_energy_change_ev_per_atom": -0.012701034545898438,
+      "final_max_force_ev_per_angstrom": 0.04583765012468815,
+      "volume_change_percent": -2.170723624392218,
+      "trajectory_frame_count": 22,
+      "review_flags": [],
+      "post_relax_audit_status": "pass",
+      "post_relax_min_distance_angstrom": 2.082959205823109,
+      "post_relax_space_group": "R3m",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_59538db42ea7_chgnet_relaxed.cif"
+    },
+    {
+      "rank": 4,
+      "candidate_id": "camp_5e6d485d7147",
+      "formula": "Zr3TaWC5",
+      "gnn_formation_energy_ev_per_atom": -0.5146,
+      "chgnet_relaxation_status": "converged",
+      "chgnet_energy_change_ev_per_atom": -0.032258033752441406,
+      "final_max_force_ev_per_angstrom": 0.03489054812136858,
+      "volume_change_percent": -3.0488380351561264,
+      "trajectory_frame_count": 37,
+      "review_flags": [],
+      "post_relax_audit_status": "pass",
+      "post_relax_min_distance_angstrom": 2.1917453910637033,
+      "post_relax_space_group": "R3m",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_5e6d485d7147_chgnet_relaxed.cif"
+    },
+    {
+      "rank": 5,
+      "candidate_id": "camp_436da3bac8cc",
+      "formula": "Ti2VWC4",
+      "gnn_formation_energy_ev_per_atom": -0.4746,
+      "chgnet_relaxation_status": "converged",
+      "chgnet_energy_change_ev_per_atom": -0.019777297973632812,
+      "final_max_force_ev_per_angstrom": 0.017374356021488707,
+      "volume_change_percent": -2.9222059747602325,
+      "trajectory_frame_count": 22,
+      "review_flags": [],
+      "post_relax_audit_status": "pass",
+      "post_relax_min_distance_angstrom": 2.1071379929482763,
+      "post_relax_space_group": "R-3m",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_436da3bac8cc_chgnet_relaxed.cif"
+    },
+    {
+      "rank": 6,
+      "candidate_id": "camp_c606f3dc26dd",
+      "formula": "Ti2WC3",
+      "gnn_formation_energy_ev_per_atom": -0.4651,
+      "chgnet_relaxation_status": "converged",
+      "chgnet_energy_change_ev_per_atom": -0.01648235321044922,
+      "final_max_force_ev_per_angstrom": 0.03575584457689077,
+      "volume_change_percent": -3.8298674169796927,
+      "trajectory_frame_count": 13,
+      "review_flags": [],
+      "post_relax_audit_status": "pass",
+      "post_relax_min_distance_angstrom": 2.1523832228361064,
+      "post_relax_space_group": "P-3m1",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_c606f3dc26dd_chgnet_relaxed.cif"
+    },
+    {
+      "rank": 7,
+      "candidate_id": "camp_09d1c7004fe8",
+      "formula": "Ti3W2C5",
+      "gnn_formation_energy_ev_per_atom": -0.3943,
+      "chgnet_relaxation_status": "converged",
+      "chgnet_energy_change_ev_per_atom": -0.00469207763671875,
+      "final_max_force_ev_per_angstrom": 0.047844523178599906,
+      "volume_change_percent": 0.9238461802212656,
+      "trajectory_frame_count": 23,
+      "review_flags": [],
+      "post_relax_audit_status": "pass",
+      "post_relax_min_distance_angstrom": 2.1291728709049975,
+      "post_relax_space_group": "R-3m",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_09d1c7004fe8_chgnet_relaxed.cif"
+    },
+    {
+      "rank": 8,
+      "candidate_id": "camp_e24c8c77c5a4",
+      "formula": "Ta3NbWC5",
+      "gnn_formation_energy_ev_per_atom": -0.3852,
+      "chgnet_relaxation_status": "converged",
+      "chgnet_energy_change_ev_per_atom": -0.002933502197265625,
+      "final_max_force_ev_per_angstrom": 0.04099123691568318,
+      "volume_change_percent": 0.20373391427518345,
+      "trajectory_frame_count": 23,
+      "review_flags": [],
+      "post_relax_audit_status": "pass",
+      "post_relax_min_distance_angstrom": 2.171908675726023,
+      "post_relax_space_group": "R3m",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_e24c8c77c5a4_chgnet_relaxed.cif"
+    },
+    {
+      "rank": 9,
+      "candidate_id": "camp_7e59c7dae2e1",
+      "formula": "Ta3VWC5",
+      "gnn_formation_energy_ev_per_atom": -0.3663,
+      "chgnet_relaxation_status": "converged",
+      "chgnet_energy_change_ev_per_atom": -0.03661918640136719,
+      "final_max_force_ev_per_angstrom": 0.023512090805045686,
+      "volume_change_percent": -3.499946909961217,
+      "trajectory_frame_count": 33,
+      "review_flags": [],
+      "post_relax_audit_status": "pass",
+      "post_relax_min_distance_angstrom": 2.1020664427605045,
+      "post_relax_space_group": "R3m",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_7e59c7dae2e1_chgnet_relaxed.cif"
+    },
+    {
+      "rank": 10,
+      "candidate_id": "camp_e12c99a3cbe3",
+      "formula": "TaTi2W2C5",
+      "gnn_formation_energy_ev_per_atom": -0.364,
+      "chgnet_relaxation_status": "converged",
+      "chgnet_energy_change_ev_per_atom": -0.01826190948486328,
+      "final_max_force_ev_per_angstrom": 0.04790382148873868,
+      "volume_change_percent": 3.240921403966574,
+      "trajectory_frame_count": 28,
+      "review_flags": [],
+      "post_relax_audit_status": "pass",
+      "post_relax_min_distance_angstrom": 2.122771360443127,
+      "post_relax_space_group": "R3m",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_e12c99a3cbe3_chgnet_relaxed.cif"
+    },
+    {
+      "rank": 11,
+      "candidate_id": "camp_5d66d98b2e72",
+      "formula": "Ti2MoWC4",
+      "gnn_formation_energy_ev_per_atom": -0.3545,
+      "chgnet_relaxation_status": "converged",
+      "chgnet_energy_change_ev_per_atom": -0.0028667449951171875,
+      "final_max_force_ev_per_angstrom": 0.03961890889986795,
+      "volume_change_percent": 0.27960132951920663,
+      "trajectory_frame_count": 22,
+      "review_flags": [],
+      "post_relax_audit_status": "pass",
+      "post_relax_min_distance_angstrom": 2.137701038124417,
+      "post_relax_space_group": "R-3m",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_5d66d98b2e72_chgnet_relaxed.cif"
+    },
+    {
+      "rank": 12,
+      "candidate_id": "camp_b3d4dae0761d",
+      "formula": "Ta2WC3",
+      "gnn_formation_energy_ev_per_atom": -0.3394,
+      "chgnet_relaxation_status": "converged",
+      "chgnet_energy_change_ev_per_atom": -0.013581275939941406,
+      "final_max_force_ev_per_angstrom": 0.032171562356332006,
+      "volume_change_percent": 2.924784702229994,
+      "trajectory_frame_count": 17,
+      "review_flags": [],
+      "post_relax_audit_status": "pass",
+      "post_relax_min_distance_angstrom": 2.185663025176793,
+      "post_relax_space_group": "P-3m1",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_b3d4dae0761d_chgnet_relaxed.cif"
+    },
+    {
+      "rank": 13,
+      "candidate_id": "camp_07c19a4f8993",
+      "formula": "Ti2VW2C5",
+      "gnn_formation_energy_ev_per_atom": -0.3098,
+      "chgnet_relaxation_status": "converged",
+      "chgnet_energy_change_ev_per_atom": -0.017004013061523438,
+      "final_max_force_ev_per_angstrom": 0.03939639361319143,
+      "volume_change_percent": -1.3027206112304281,
+      "trajectory_frame_count": 30,
+      "review_flags": [],
+      "post_relax_audit_status": "pass",
+      "post_relax_min_distance_angstrom": 2.0760993576762243,
+      "post_relax_space_group": "R3m",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_07c19a4f8993_chgnet_relaxed.cif"
+    },
+    {
+      "rank": 14,
+      "candidate_id": "camp_2fdc7d189aea",
+      "formula": "Ta3MoWC5",
+      "gnn_formation_energy_ev_per_atom": -0.3042,
+      "chgnet_relaxation_status": "converged",
+      "chgnet_energy_change_ev_per_atom": -0.00791168212890625,
+      "final_max_force_ev_per_angstrom": 0.04699906349260083,
+      "volume_change_percent": -1.0917684938995538,
+      "trajectory_frame_count": 33,
+      "review_flags": [],
+      "post_relax_audit_status": "pass",
+      "post_relax_min_distance_angstrom": 2.151970972605256,
+      "post_relax_space_group": "R3m",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_2fdc7d189aea_chgnet_relaxed.cif"
+    },
+    {
+      "rank": 15,
+      "candidate_id": "camp_2bba2ed09193",
+      "formula": "Ta3W2C5",
+      "gnn_formation_energy_ev_per_atom": -0.2537,
+      "chgnet_relaxation_status": "converged",
+      "chgnet_energy_change_ev_per_atom": -0.009378433227539062,
+      "final_max_force_ev_per_angstrom": 0.018420675346788543,
+      "volume_change_percent": -1.11670252491177,
+      "trajectory_frame_count": 30,
+      "review_flags": [],
+      "post_relax_audit_status": "pass",
+      "post_relax_min_distance_angstrom": 2.1362192077362776,
+      "post_relax_space_group": "R3m",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_2bba2ed09193_chgnet_relaxed.cif"
+    }
+  ],
+  "recommended_dft_queue": [
+    {
+      "rank": 1,
+      "candidate_id": "camp_41a80c8b8b30",
+      "formula": "Ti3NbWC5",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_41a80c8b8b30_chgnet_relaxed.cif"
+    },
+    {
+      "rank": 2,
+      "candidate_id": "camp_015e29be10e0",
+      "formula": "Zr3TiWC5",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_015e29be10e0_chgnet_relaxed.cif"
+    },
+    {
+      "rank": 3,
+      "candidate_id": "camp_59538db42ea7",
+      "formula": "Ti3VWC5",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_59538db42ea7_chgnet_relaxed.cif"
+    },
+    {
+      "rank": 4,
+      "candidate_id": "camp_5e6d485d7147",
+      "formula": "Zr3TaWC5",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_5e6d485d7147_chgnet_relaxed.cif"
+    },
+    {
+      "rank": 5,
+      "candidate_id": "camp_436da3bac8cc",
+      "formula": "Ti2VWC4",
+      "relaxed_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxed_cifs/camp_436da3bac8cc_chgnet_relaxed.cif"
+    }
+  ],
+  "scientific_limits": [
+    "GNN formation energy is a screening prediction, not a stability proof.",
+    "CHGNet raw energies are ML potential energies and must not be compared across different compositions as formation energies.",
+    "CHGNet relaxation is not DFT relaxation.",
+    "No convex-hull, phonon, elastic, oxidation, melting-point, creep, or experimental thermal validation has been completed."
+  ],
+  "next_stage": "Run reproducible DFT relaxations for the recommended queue, then static energies and phase-diagram/convex-hull analysis before thermal-property screening.",
+  "sources": {
+    "campaign_summary": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/campaign_summary.json",
+    "pre_relax_audit_summary": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/audit/structure_audit_summary.json",
+    "shortlist_summary": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/shortlist_top15_v1/shortlist_summary.json",
+    "relaxation_summary": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/relaxation_summary.json",
+    "post_relax_audit_summary": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/chgnet_relax_top15_v1/post_relax_audit/structure_audit_summary.json"
+  }
+}

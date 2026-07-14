@@ -1,0 +1,26 @@
+{
+  "requirement": "stable high-temperature refractory oxide candidate containing tantalum and oxygen",
+  "phase": "generation",
+  "n_retrieved": 20,
+  "n_generated": 0,
+  "n_validated": 0,
+  "target_energy": -1.0,
+  "include_elements": [
+    "Ta",
+    "O"
+  ],
+  "only_elements": null,
+  "retrieval_stats": {
+    "count": 1149,
+    "min": -3.91455508806818,
+    "max": 0.6191367885716671,
+    "mean": -3.0004035982488175,
+    "p05": -3.7327843759999997,
+    "p25": -3.4205474616666662,
+    "median": -3.0831195477499995,
+    "p75": -2.735917034166667,
+    "p95": -1.927164613234
+  },
+  "top_candidates": [],
+  "elapsed_seconds": 90.7
+}

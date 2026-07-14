@@ -1,0 +1,44 @@
+{
+  "workflow_version": "qe_pbe_candidate_relax_v1",
+  "status": "blocked_missing_pseudopotentials",
+  "calculation_started": false,
+  "dft_validated_count": 0,
+  "validation_report": "/Users/koiita/Downloads/ai-meterial/research/phase_2/reports/w_c_structural_validation_v1.json",
+  "config": "/Users/koiita/Downloads/ai-meterial/research/phase_2/dft_validation/qe_dft_config_v1.json",
+  "candidate_count": 5,
+  "required_elements": [
+    "C",
+    "Ti",
+    "V",
+    "Zr",
+    "Nb",
+    "Ta",
+    "W"
+  ],
+  "pseudo_manifest": null,
+  "pseudo_library": null,
+  "pseudo_library_version": null,
+  "pseudo_blockers": [
+    "pseudo_manifest_not_provided"
+  ],
+  "pw_executable_requested": "pw.x",
+  "pw_executable_resolved": null,
+  "engine_blockers": [
+    "pw_executable_not_found:pw.x"
+  ],
+  "global_ecutwfc_ry": null,
+  "global_ecutrho_ry": null,
+  "machine": {
+    "architecture": "arm64",
+    "platform": "macOS-15.7.7-arm64-arm-64bit",
+    "logical_cpu_count": 8
+  },
+  "resource_policy": {
+    "max_parallel_jobs": 1,
+    "recommended_mpi_ranks_on_this_mac": 2,
+    "omp_threads_per_rank": 1,
+    "note": "Do not run all five jobs concurrently on the 8 GB Mac. Prefer an HPC node for production calculations."
+  },
+  "queue_manifest": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/dft_qe_top5_v1/dft_queue_manifest.csv",
+  "scientific_limit": "This artifact only prepares candidate relaxation inputs. Formation energies and convex-hull stability require completed, converged DFT calculations for candidates and all relevant reference phases using one consistent setup."
+}
