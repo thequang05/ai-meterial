@@ -1,0 +1,33 @@
+{
+  "schema_version": "qe_dft_config_v1",
+  "workflow_version": "qe_pbe_candidate_relax_v1",
+  "engine": "Quantum ESPRESSO pw.x",
+  "calculation": "vc-relax",
+  "input_dft": "PBE",
+  "pseudo_policy": "one complete scalar-relativistic SSSP PBE Precision release; verify every SHA-256",
+  "global_cutoff_policy": "maximum recommended ecutwfc and ecutrho across the union of elements in the full queue",
+  "kpoint_spacing_inv_angstrom": 0.2,
+  "occupations": "smearing",
+  "smearing": "mv",
+  "degauss_ry": 0.02,
+  "conv_thr": 1e-08,
+  "electron_maxstep": 200,
+  "mixing_beta": 0.3,
+  "diagonalization": "david",
+  "nstep": 200,
+  "etot_conv_thr_ry": 1e-05,
+  "forc_conv_thr_ry_per_bohr": 0.0008,
+  "press_conv_thr_kbar": 0.5,
+  "cell_dofree": "all",
+  "static_kpoint_spacing_inv_angstrom": 0.15,
+  "static_degauss_ry": 0.01,
+  "static_conv_thr": 1e-10,
+  "spin_policy": "initial non-spin-polarized screen; explicitly test spin polarization for surviving finalists",
+  "soc_policy": "scalar-relativistic first pass; assess spin-orbit effects for Ta/W finalists before publication-quality ranking",
+  "resource_policy": {
+    "max_parallel_jobs": 1,
+    "recommended_mpi_ranks_on_this_mac": 2,
+    "omp_threads_per_rank": 1,
+    "note": "Do not run all five jobs concurrently on the 8 GB Mac. Prefer an HPC node for production calculations."
+  }
+}

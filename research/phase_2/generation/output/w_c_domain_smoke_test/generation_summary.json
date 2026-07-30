@@ -1,0 +1,39 @@
+{
+  "requirement": "stable refractory tungsten carbide candidate",
+  "phase": "generation",
+  "n_retrieved": 5,
+  "n_generated": 0,
+  "n_validated": 0,
+  "target_energy": -1.0,
+  "include_elements": [
+    "W",
+    "C"
+  ],
+  "only_elements": null,
+  "domain_filter": "refractory_carbide_v1",
+  "allowed_elements": [
+    "C",
+    "Cr",
+    "Hf",
+    "Mo",
+    "Nb",
+    "Ta",
+    "Ti",
+    "V",
+    "W",
+    "Zr"
+  ],
+  "retrieval_stats": {
+    "count": 153,
+    "min": -2.2661949231948055,
+    "max": 1.4319428150000006,
+    "mean": -0.29427196425741714,
+    "p05": -1.5626377031740435,
+    "p25": -0.6639869523095238,
+    "median": -0.1628521598437498,
+    "p75": 0.12668352687500217,
+    "p95": 0.794296746625001
+  },
+  "top_candidates": [],
+  "elapsed_seconds": 28.8
+}

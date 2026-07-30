@@ -1,0 +1,71 @@
+{
+  "requirement": "stable high-temperature refractory oxide candidate containing tantalum and oxygen",
+  "phase": "generation",
+  "n_retrieved": 20,
+  "n_generated": 4,
+  "n_validated": 4,
+  "target_energy": -1.0,
+  "include_elements": [
+    "Ta",
+    "O"
+  ],
+  "only_elements": null,
+  "retrieval_stats": {
+    "count": 1149,
+    "min": -3.91455508806818,
+    "max": 0.6191367885716671,
+    "mean": -3.0004035982488175,
+    "p05": -3.7327843759999997,
+    "p25": -3.4205474616666662,
+    "median": -3.0831195477499995,
+    "p75": -2.735917034166667,
+    "p95": -1.927164613234
+  },
+  "top_candidates": [
+    {
+      "candidate_id": "cand_b807c0ba",
+      "formula": "O14Y6Ta2",
+      "prototype_uid": "MP_mp-1190968",
+      "prototype_formula": "Y3TaO7",
+      "num_atoms": 22,
+      "num_edges": 432,
+      "gnn_formation_energy": -3.7507,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 1.0
+    },
+    {
+      "candidate_id": "cand_542d1092",
+      "formula": "O19Ta2Y",
+      "prototype_uid": "MP_mp-1225383",
+      "prototype_formula": "Dy2YTaO7",
+      "num_atoms": 22,
+      "num_edges": 432,
+      "gnn_formation_energy": -1.6967,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 0.737
+    },
+    {
+      "candidate_id": "cand_ca6aa318",
+      "formula": "O40Ta4",
+      "prototype_uid": "MP_mp-1178370",
+      "prototype_formula": "Dy3TaO7",
+      "num_atoms": 44,
+      "num_edges": 860,
+      "gnn_formation_energy": -1.2091,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 0.684
+    },
+    {
+      "candidate_id": "cand_901c658a",
+      "formula": "O20Ta2",
+      "prototype_uid": "MP_mp-1178364",
+      "prototype_formula": "Dy3TaO7",
+      "num_atoms": 22,
+      "num_edges": 428,
+      "gnn_formation_energy": -1.1664,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 0.368
+    }
+  ],
+  "elapsed_seconds": 48.0
+}

@@ -1,0 +1,36 @@
+# generated using pymatgen
+data_Zr3TiWC5
+_symmetry_space_group_name_H-M   'P 1'
+_cell_length_a   3.23979118
+_cell_length_b   3.23979122
+_cell_length_c   13.28192704
+_cell_angle_alpha   82.99464383
+_cell_angle_beta   89.99999443
+_cell_angle_gamma   120.00001428
+_symmetry_Int_Tables_number   1
+_chemical_formula_structural   Zr3TiWC5
+_chemical_formula_sum   'Zr3 Ti1 W1 C5'
+_cell_volume   119.52967321
+_cell_formula_units_Z   1
+loop_
+ _symmetry_equiv_pos_site_id
+ _symmetry_equiv_pos_as_xyz
+  1  'x, y, z'
+loop_
+ _atom_site_type_symbol
+ _atom_site_label
+ _atom_site_symmetry_multiplicity
+ _atom_site_fract_x
+ _atom_site_fract_y
+ _atom_site_fract_z
+ _atom_site_occupancy
+  Zr  Zr_1  1  0.90155079  0.80309937  0.29534952  1
+  Zr  Zr_2  1  0.49774372  -0.00451224  0.50676851  1
+  Zr  Zr_3  1  0.70081100  0.40162087  0.89756826  1
+  Ti  Ti_1  1  0.09897442  0.19794791  0.70307772  1
+  W  W_1  1  0.30133712  0.60270853  0.09595597  1
+  C  C_1  1  0.40144015  0.80287857  0.79568121  1
+  C  C_2  1  0.20034613  0.40069141  0.39896231  1
+  C  C_3  1  0.79589944  0.59179876  0.61230177  1
+  C  C_4  1  0.99705269  0.99409167  0.00885529  1
+  C  C_5  1  0.60484454  0.20967516  0.18547943  1

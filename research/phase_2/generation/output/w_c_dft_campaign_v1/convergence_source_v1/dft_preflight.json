@@ -1,0 +1,111 @@
+{
+  "workflow_version": "qe_pbe_candidate_relax_v1",
+  "status": "convergence_source_only_not_runnable",
+  "calculation_started": false,
+  "dft_validated_count": 0,
+  "validation_report": "/Users/koiita/Downloads/ai-meterial/research/phase_2/reports/w_c_structural_validation_v1.json",
+  "validation_report_sha256": "b0deaa7593e781614eefdd4c1997b6845a6e0fa0a5655918fc12ca767f5ceac5",
+  "source_inventory": null,
+  "source_inventory_sha256": null,
+  "config_source": "/Users/koiita/Downloads/ai-meterial/research/phase_2/dft_validation/qe_dft_config_v1.json",
+  "config": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_source_v1/workflow_config_snapshot.json",
+  "candidate_count": 5,
+  "required_elements": [
+    "C",
+    "Ti",
+    "V",
+    "Zr",
+    "Nb",
+    "Ta",
+    "W"
+  ],
+  "pseudo_manifest_source": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/sssp/sssp_pbe_precision_1.3.0_locked.json",
+  "pseudo_manifest": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_source_v1/pseudo_manifest_snapshot.json",
+  "pseudo_library": "SSSP PBE Precision",
+  "pseudo_library_version": "1.3.0",
+  "pseudo_blockers": [],
+  "pw_executable_requested": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/bin/pw.x",
+  "pw_executable_resolved": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/bin/pw.x",
+  "engine_blockers": [],
+  "scratch_root": null,
+  "scratch_layout": "job_local_tmp",
+  "scratch_campaign_namespace": null,
+  "scratch_campaign_dir": null,
+  "global_ecutwfc_ry": 50.0,
+  "global_ecutrho_ry": 400.0,
+  "base_ecutwfc_ry": 50.0,
+  "base_ecutrho_ry": 400.0,
+  "effective_kpoint_spacing_inv_angstrom": 0.2,
+  "convergence_source_only": true,
+  "production_settings_certified": false,
+  "convergence_certificate": null,
+  "convergence_certificate_sha256": null,
+  "convergence_certificate_id": null,
+  "convergence_certificate_payload_sha256": null,
+  "convergence_qe_program_version": null,
+  "convergence_pw_executable_sha256": null,
+  "certified_execution_provenance": null,
+  "confirmed_selected_settings": null,
+  "certified_production_settings": null,
+  "production_settings_scope": null,
+  "relax_settings_hash": "1984f620cc6e8303f7a88aa6223bfe39ef06ffba9e3a58d40e626a1c3e931da1",
+  "relax_input_settings_hash": "1984f620cc6e8303f7a88aa6223bfe39ef06ffba9e3a58d40e626a1c3e931da1",
+  "bundled_pseudopotentials": [
+    {
+      "element": "C",
+      "filename": "C.pbe-n-kjpaw_psl.1.0.0.UPF",
+      "path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_source_v1/pseudos/C.pbe-n-kjpaw_psl.1.0.0.UPF",
+      "sha256": "9900d1efd50b9848e31849f39094b33348486b400ee51e0f3922f716137cf3d7"
+    },
+    {
+      "element": "Ti",
+      "filename": "ti_pbe_v1.4.uspp.F.UPF",
+      "path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_source_v1/pseudos/ti_pbe_v1.4.uspp.F.UPF",
+      "sha256": "747afa52fa17dc061e9eff72bcea534e81ffa5a4a5d33af3eb8fc9f1b3aee580"
+    },
+    {
+      "element": "V",
+      "filename": "v_pbe_v1.4.uspp.F.UPF",
+      "path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_source_v1/pseudos/v_pbe_v1.4.uspp.F.UPF",
+      "sha256": "4fc8afef98a911c82908fb9142edf71b2f598dd98762b355a6d291d834fb6d0c"
+    },
+    {
+      "element": "Zr",
+      "filename": "Zr_pbe_v1.uspp.F.UPF",
+      "path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_source_v1/pseudos/Zr_pbe_v1.uspp.F.UPF",
+      "sha256": "d56e2997788a4b3d90bb829416161ff9eb6ccdfe377cb52acfbdd2175f4b4acf"
+    },
+    {
+      "element": "Nb",
+      "filename": "Nb.pbe-spn-kjpaw_psl.0.3.0.UPF",
+      "path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_source_v1/pseudos/Nb.pbe-spn-kjpaw_psl.0.3.0.UPF",
+      "sha256": "ccf07218ea34daaa63ff57d9f44ca8b4b529728cccbc8f74dd5fc804ac01e48e"
+    },
+    {
+      "element": "Ta",
+      "filename": "Ta_pbe_v1.uspp.F.UPF",
+      "path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_source_v1/pseudos/Ta_pbe_v1.uspp.F.UPF",
+      "sha256": "e0850b94d7007d47691d131db1fa5ffdaaa6f6a573c1ebf1fb425e46ed891ee1"
+    },
+    {
+      "element": "W",
+      "filename": "W_pbe_v1.2.uspp.F.UPF",
+      "path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_source_v1/pseudos/W_pbe_v1.2.uspp.F.UPF",
+      "sha256": "3cb024d05ba2413340c9e993bc149bf94d44fb23e609642466d87ca30c88c569"
+    }
+  ],
+  "machine": {
+    "architecture": "arm64",
+    "platform": "macOS-15.7.7-arm64-arm-64bit",
+    "logical_cpu_count": 8
+  },
+  "resource_policy": {
+    "max_parallel_jobs": 1,
+    "recommended_mpi_ranks_on_this_mac": 2,
+    "omp_threads_per_rank": 1,
+    "note": "Do not run all five jobs concurrently on the 8 GB Mac. Prefer an HPC node for production calculations."
+  },
+  "queue_manifest": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_source_v1/dft_queue_manifest.csv",
+  "queue_manifest_sha256": "4420c636fbe8dd5d2144bfac24b0a8f809964ad94af7f1787a066019674c8997",
+  "scientific_limit": "This artifact only prepares candidate relaxation inputs. Formation energies and convex-hull stability require completed, converged DFT calculations for candidates and all relevant reference phases using one consistent setup."
+}

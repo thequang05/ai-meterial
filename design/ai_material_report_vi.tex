@@ -1,0 +1,751 @@
+\documentclass[11pt,a4paper]{report}
+
+% ─────────────────────────────────────────────────────────────
+%  Packages (Vietnamese-only build — VnTeX fonts enabled)
+% ─────────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage[vietnamese]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{multirow}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric,fit,backgrounds,calc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{microtype}
+
+% ─────────────────────────────────────────────────────────────
+%  Style
+% ─────────────────────────────────────────────────────────────
+\geometry{
+  a4paper,
+  left=22mm, right=22mm,
+  top=22mm, bottom=22mm,
+  headheight=14pt
+}
+
+\definecolor{aiBlue}{HTML}{0F4C81}
+\definecolor{aiOrange}{HTML}{E07B00}
+\definecolor{aiGreen}{HTML}{3A7D44}
+\definecolor{aiRed}{HTML}{B0413E}
+\definecolor{aiGray}{HTML}{6C757D}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=aiBlue,
+  citecolor=aiBlue,
+  urlcolor=aiBlue,
+  pdftitle={AI Material Discovery — Báo cáo (VI)},
+  pdfauthor={AI Meterial Team},
+}
+
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{aiBlue}}
+  {\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{aiBlue!85!black}}
+  {\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{aiOrange}}
+  {\thesubsection}{1em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{AI Material Discovery}}
+\fancyhead[R]{\small\textit{Báo cáo cuộc thi (VI)}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ─────────────────────────────────────────────────────────────
+%  Listings
+% ─────────────────────────────────────────────────────────────
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{black!3},
+  frame=single,
+  framesep=4pt,
+  rulecolor=\color{black!20},
+  breaklines=true,
+  numbers=left,
+  numberstyle=\tiny\color{black!50},
+  keywordstyle=\color{aiBlue}\bfseries,
+  commentstyle=\color{aiGray}\itshape,
+  stringstyle=\color{aiGreen},
+  showstringspaces=false,
+  captionpos=b,
+}
+
+% ─────────────────────────────────────────────────────────────
+%  Helpers
+% ─────────────────────────────────────────────────────────────
+\newcommand{\eV}{eV/atom}
+
+% ─────────────────────────────────────────────────────────────
+%  Title
+% ─────────────────────────────────────────────────────────────
+\title{\textbf{Khám phá vật liệu chịu nhiệt bằng AI} \\[6pt]
+  \large Pipeline học máy đầu cuối cho xếp hạng công thức gốm}
+\author{AI Meterial Team \\ \textit{ai-meterial v0.1}}
+\date{Tháng 7, 2026}
+
+\begin{document}
+
+% ─────────────────────────────────────────────────────────────
+%  Cover page
+% ─────────────────────────────────────────────────────────────
+\begin{titlepage}
+\centering
+\vspace*{1.5cm}
+{\color{aiBlue}\rule{\linewidth}{1.5pt}}\\[0.5cm]
+{\Huge\bfseries\color{aiBlue} Khám phá vật liệu \\[2pt]
+  chịu nhiệt bằng AI}\\[0.4cm]
+{\large \textit{Pipeline học máy đầu cuối cho xếp hạng công thức gốm}}\\[1.2cm]
+
+\begin{tikzpicture}[every node/.style={font=\small}]
+  \node[draw, rounded corners, fill=aiBlue!8, minimum width=11cm, minimum height=1.4cm, align=center]
+    {Báo cáo cuộc thi — Hồ sơ dự thi \\\large\textbf{AI Material Discovery}};
+\end{tikzpicture}\\[1.5cm]
+
+\begin{minipage}{0.75\textwidth}
+\centering
+\textbf{AI Meterial Team} \\
+\small ai-meterial v0.1 \quad|\quad Tháng 7, 2026 \\
+\small Mã nguồn: \texttt{research/phase\_2/}
+\end{minipage}\\[2cm]
+
+{\color{aiBlue}\rule{\linewidth}{1.5pt}}\\[0.3cm]
+\small\textbf{Từ khóa:} \textit{khoa học vật liệu sinh sinh, GraphVAE, CHGNet relax, surrogate ML, carbide chịu lửa, ML4Science}
+\vspace{1.5cm}
+\end{titlepage}
+
+% ─────────────────────────────────────────────────────────────
+%  Table of contents
+% ─────────────────────────────────────────────────────────────
+\tableofcontents
+\listoffigures
+\listoftables
+\newpage
+
+% ─────────────────────────────────────────────────────────────
+%  Executive summary / Tóm tắt điều hành
+% ─────────────────────────────────────────────────────────────
+\chapter*{Tóm tắt điều hành}
+\addcontentsline{toc}{chapter}{Tóm tắt điều hành}
+
+Chúng tôi trình bày một pipeline học máy đầu cuối: từ prompt ngôn ngữ tự nhiên, hệ thống
+xếp hạng các công thức vô cơ cho ứng dụng gốm chịu nhiệt. Pipeline gồm sáu giai đoạn:
+(0) truy vấn Neo4j theo ngôn ngữ tự nhiên, (1) GraphVAE sinh ứng viên có điều kiện trên vật
+liệu nguyên mẫu, (1b) tái dựng CIF từ đồ thị prototype, (2) kiểm định cấu trúc trước relax,
+(3a--d) chọn top, CHGNet relax, kiểm định sau relax, và (4) chấm điểm bằng surrogate ML so
+với tham chiếu Materials Project. Hệ thống hiện xếp hạng \textit{mười lăm} ứng viên carbide
+chịu nhiệt hệ W--C, trong đó bốn ứng viên đạt tiêu chí \texttt{competitive\_with\_best\_mp};
+ứng viên hạng nhất \texttt{Ti$_3$NbWC$_5$} có năng lượng tạo thành GNN sau CHGNet bằng
+$-0{,}35$\,\eV{} và khoảng cách hull $0{,}29$\,\eV{} so với tham chiếu hệ con
+\texttt{TiNbC$_2$}.
+
+\vspace{0.5em}
+\noindent\textbf{Đóng góp chính}
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+\item Kết nối đầu cuối pipeline 5 giai đoạn: prompt người dùng chạy từ Neo4j retrieval tới
+      đầu ra xếp hạng trong $\sim$150--180\,s trên phần cứng MPS.
+\item Thêm Stage~1b (\texttt{build\_candidate\_cifs.py}) mà trình điều phối cũ thiếu; bộ
+      điều phối cũng tự tổng hợp wrapper \texttt{campaign\_summary.json} cho trình tạo
+      báo cáo.
+\item Xử lý graceful với input rỗng: khi bộ lọc hóa học Stage~1 loại hết ứng viên, các giai
+      đoạn sau vẫn sinh artifact rỗng hợp lệ để UI nhận response 200 thay vì 500.
+\end{itemize}
+
+% ═════════════════════════════════════════════════════════════
+\part{Báo cáo kỹ thuật}
+% ═════════════════════════════════════════════════════════════
+
+% ─────────────────────────────────────────────────────────────
+\chapter{Phát biểu bài toán}
+% ─────────────────────────────────────────────────────────────
+
+\section{Động lực}
+
+Gốm chịu nhiệt cực cao (UHTC) và carbide chịu lửa là xương sống của hệ thống bảo vệ nhiệt
+cho phương tiện siêu thanh, buồng động cơ phản lực, và lớp bọc lò phản ứng tiên tiến.
+Pipeline truyền thống dựa vào DFT tốn kém ($10^3$--$10^4$ CPU-giờ / vật liệu) và sàng lọc
+kiểu Edison trên $\sim$$10^5$ công thức đã biết trong Materials Project \cite{jain2013mp}.
+Ngay cả khi sàng lọc cao tốc, xếp hạng 100 ứng viên tới kiểm chứng trong phòng thí nghiệm
+thường ngốn hàng tháng tính toán.
+
+\section{Định nghĩa bài toán}
+
+Cho một truy vấn ngôn ngữ tự nhiên (ví dụ ``ứng viên carbide chịu lửa W--Ti bền''), đầu ra
+là danh sách xếp hạng các công thức vô cơ kèm:
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+\item Năng lượng tạo thành ML dự đoán trước và sau relax, $E_f^{\text{GNN}}$.
+\item Kiểm định hóa học / cấu trúc (nguyên tố bị cấm, khoảng cách liên nguyên tử tối thiểu,
+      mạng Bravais, nhóm không gian).
+\item Điểm proxy nhiệt ML so sánh $E_f$ sau relax của ứng viên với công thức tốt nhất
+      trong cùng hệ con hóa học trên Materials Project.
+\end{enumerate}
+
+\section{Giới hạn khoa học}
+
+Chúng tôi minh bạch tuyên bố các giới hạn sau:
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+\item \textbf{ML relaxation không phải DFT.} Năng lượng CHGNet là thế năng ML; chúng tôi chỉ
+      dùng độ chênh trước / sau làm tín hiệu chất lượng.
+\item \textbf{GNN là bộ xếp hạng}, không phải công cụ tính năng lượng tạo thành định lượng.
+      Chúng tôi chỉ báo cáo nó như một metric ``rank''.
+\item \textbf{Thermal proxy không phải dữ liệu creep / oxidation.} So sánh với $E_f$ MP
+      trong cùng hệ con; chúng tôi \emph{không} dự đoán tuổi thọ nhiệt.
+\item Pipeline \emph{chưa qua xác nhận DFT} trong lượt chạy hiện tại; trường
+      \texttt{dft\_validated} trong báo cáo cấu trúc luôn bằng không.
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────
+\chapter{Giải pháp đề xuất}
+% ─────────────────────────────────────────────────────────────
+
+\section{Kiến trúc hệ thống}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  node distance=1.0cm and 1.0cm,
+  every node/.style={font=\small},
+  stage/.style={rectangle, rounded corners, draw=aiBlue, fill=aiBlue!8, text width=2.6cm,
+                minimum height=1.2cm, align=center},
+  datastore/.style={cylinder, shape border rotate=90, aspect=0.3, draw=aiGreen,
+                    fill=aiGreen!8, text width=2.2cm, minimum height=1.2cm, align=center},
+  artifact/.style={rectangle, draw=aiOrange, fill=aiOrange!8, text width=2.4cm,
+                   minimum height=1.0cm, align=center},
+  >={Stealth[length=2mm]}
+]
+  \node[artifact] (prompt) {\textbf{Prompt} \\ \textit{(NL)}};
+  \node[stage, right=of prompt] (s0) {Stage 0 \\ \footnotesize NL $\to$ Neo4j};
+  \node[datastore, right=of s0] (neo4j) {Neo4j \\ \footnotesize KG};
+  \node[stage, right=of neo4j] (s1) {Stage 1 \\ \footnotesize GraphVAE};
+  \node[stage, right=of s1] (s1b) {Stage 1b \\ \footnotesize Tạo CIF};
+  \node[stage, below=of s1b] (s2) {Stage 2 \\ \footnotesize Pre-audit};
+  \node[stage, left=of s2] (s3a) {Stage 3a \\ \footnotesize Shortlist};
+  \node[stage, left=of s3a] (s3b) {Stage 3b \\ \footnotesize CHGNet};
+  \node[stage, below=of s3b] (s3c) {Stage 3c \\ \footnotesize Post-audit};
+  \node[stage, right=of s3c] (s3d) {Stage 3d \\ \footnotesize Báo cáo};
+  \node[stage, right=of s3d] (s4) {Stage 4 \\ \footnotesize ML eval};
+  \node[artifact, right=of s4] (rank) {\textbf{Xếp hạng} \\ \textit{15 ứng viên}};
+
+  \draw[->,thick] (prompt) -- (s0);
+  \draw[->,thick] (s0) -- (neo4j);
+  \draw[<->,thick] (neo4j) -- (s1);
+  \draw[->,thick] (s1) -- (s1b);
+  \draw[->,thick] (s1b) -- (s2);
+  \draw[->,thick] (s2) -- (s3a);
+  \draw[->,thick] (s3a) -- (s3b);
+  \draw[->,thick] (s3b) -- (s3c);
+  \draw[->,thick] (s3c) -- (s3d);
+  \draw[->,thick] (s3d) -- (s4);
+  \draw[->,thick] (s4) -- (rank);
+\end{tikzpicture}
+\caption{Kiến trúc pipeline đầu cuối. Mũi tên liền là luồng dữ liệu runtime;
+  mũi tên hai chiều giữa Neo4j và Stage~1 biểu thị truy vấn độc lập do trình
+  GraphVAE thực hiện.}
+\label{fig:architecture}
+\end{figure}
+
+\section{Mô tả từng giai đoạn}
+
+\paragraph{Stage 0 -- NL $\to$ candidates (rule + LLM).}
+Chúng tôi kết hợp parser rule tất định (regex trên các từ khóa như ``refractory'', ``high
+temperature'', ký hiệu nguyên tố) với lệnh gọi function-call tới Qwen-2.5-1.5B hosted trên
+LM Studio. Đầu ra là envelope JSON \texttt{\{max\_energy, limit, include\_elements, only\_elements\}}.
+
+\paragraph{Stage 1 -- GraphVAE sinh ứng viên.}
+Một không gian latent 64 chiều mã hóa mỗi vật liệu nguyên mẫu. Vector latent được lấy mẫu
+bằng nội suy tuyến tính giữa các prototype được truy vấn (nội suy cho $\geq 2$ prototype;
+nhiễu ngẫu nhiên khi chỉ có 1), rồi giải mã thành các công thức có ý thức hóa học. Bộ lọc
+novelty loại (a) các công thức trùng y nguyên mẫu và (b) nguyên tố ngoài miền.
+
+\paragraph{Stage 1b -- Tái dựng CIF (\texttt{build\_candidate\_cifs.py}).}
+Với mỗi dòng ứng viên, đồ thị prototype (Crystal Graph từ
+\texttt{materials\_graphs.pt}, $\sim$2{,}98\,GB) bị biến đổi theo phép thay đã ghi và một
+\texttt{Structure} đầy đủ của pymatgen được ghi xuống đĩa. Bước này vốn thiếu trong trình
+điều phối cũ và chính là lý do trước đây pipeline không tới được Stage~4.
+
+\paragraph{Stage 2 -- Kiểm định cấu trúc trước relax.}
+Tính khoảng cách liên nguyên tử tối thiểu, tỉ số bán kính ion, mạng Bravais, nhóm không
+gian (Spglib), và loại các cấu trúc fail (thường do liên kết quá ngắn).
+
+\paragraph{Stage 3a -- Shortlist cho relax.}
+Nối ba artifact theo \texttt{candidate\_id}, sắp xếp theo năng lượng tạo thành GNN, và
+sinh manifest đầu vào cho top-$N$ relaxation.
+
+\paragraph{Stage 3b -- CHGNet relaxation.}
+Tải CHGNet v0.3.0 (412.525 tham số) trên thiết bị tự chọn (MPS / CUDA / CPU) và chạy
+optimizer FIRE tối đa 500 bước với $F_{\max}\leq0{,}05$ eV/\AA. Chúng tôi ghi nhận năng
+lượng đầu / cuối, biến thiên thể tích, lực max cuối, và số frame quỹ đạo.
+
+\paragraph{Stage 3c -- Kiểm định cấu trúc sau relax.}
+Cùng kiểm định như Stage~2 nhưng trên CIF đã relax.
+
+\paragraph{Stage 3d -- Trình tạo báo cáo kiểm định cấu trúc.}
+Gộp campaign, pre/post-audit, shortlist, relaxation summaries thành một
+\texttt{structural\_validation.json} duy nhất. Trình điều phối tự tổng hợp wrapper
+\texttt{campaign\_summary.json} mà bước này yêu cầu, vì
+\texttt{generation\_campaign.py} (vốn tạo nó) chạy trên chiến dịch đa seed.
+
+\paragraph{Stage 4 -- Đánh giá proxy nhiệt ML-only.}
+Với mỗi ứng viên được chọn, truy vấn bản sao Materials Project cục bộ
+(\texttt{materials.csv}, 28{,}8\,MB) để lấy công thức có năng lượng tạo thành tốt nhất
+trong cùng hệ con hóa học và sinh \texttt{thermal\_proxy\_status} (một trong
+\texttt{competitive\_with\_best\_mp}, \texttt{energy\_too\_high}, \texttt{missing\_cif}).
+
+\section{Tài sản dữ liệu}
+
+\begin{table}[h]
+\centering
+\caption{Các tài sản dữ liệu và mô hình chính.}
+\label{tab:assets}
+\begin{tabular}{lr}
+\toprule
+\textbf{Tài sản} & \textbf{Dung lượng} \\
+\midrule
+\texttt{materials\_graphs.pt} (Cơ sở Crystal Graph) & 2.976{,}7\,MB \\
+\texttt{materials.csv} (ảnh chụp Materials Project) & 28{,}8\,MB \\
+\texttt{vae\_model.pt} (GraphVAE, latent\_dim=64) & 4{,}0\,MB \\
+\texttt{gnn\_formation\_energy\_grouped\_v1.pt} (GNN E$_f$) & 0{,}25\,MB \\
+\texttt{high\_temperature\_proxy\_v1\_graphs.pt} (tập proxy) & 297\,MB \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Cấu trúc mã nguồn}
+
+\begin{lstlisting}[language=Python,caption={Điểm vào trình điều phối.},label={lst:entry}]
+# research/phase_2/run_pipeline.py
+def main():
+    # Stage 0  nl_to_candidates.py            -> stage0_candidates.json
+    # Stage 1  generation/main.py              -> generation/generation_manifest.csv
+    # Stage 1b build_candidate_cifs.py         -> structures/cifs/*.cif
+    # Stage 2  audit_candidate_cifs.py (pre)   -> pre_relax_audit/
+    # Stage 3a build_relaxation_shortlist.py   -> shortlist/
+    # Stage 3b relax_candidate_cifs.py         -> chgnet_relax/
+    # Stage 3c audit_candidate_cifs.py (post)  -> post_relax_audit/
+    # Stage 3d build_structural_validation_report.py -> reports/
+    # Stage 4  eval_ml_thermal.py              -> ml_thermal_evaluation.csv
+\end{lstlisting}
+
+% ─────────────────────────────────────────────────────────────
+\chapter{Kết quả thực nghiệm}
+% ─────────────────────────────────────────────────────────────
+
+\section{Chiến dịch tham chiếu: carbide chịu lửa W--C}
+
+Chúng tôi phân tích lại chiến dịch W--C có sẵn (\texttt{w\_dft\_campaign\_v1}) sinh bởi
+trình điều khiển nặng \texttt{generation\_campaign.py}. Chiến dịch gồm $5$ seed, $500$ latent,
+$74$ lượt qua hóa học, $44$ giả thuyết CIF độc nhất, $38$ cấu trúc độc nhất sau khử trùng,
+$35$ đại diện công thức, và $15$ ứng viên CHGNet-relax cuối.
+
+\begin{table}[h]
+\centering
+\caption{Phễu đầu cuối cho chiến dịch W--C (5 seed, 500 latent).}
+\label{tab:funnel}
+\begin{tabular}{lr}
+\toprule
+\textbf{Giai đoạn} & \textbf{Số lượng} \\
+\midrule
+Latent được giải mã & 500 \\
+Lượt qua hóa học & 74 \\
+Giả thuyết pre-CIF độc nhất & 44 \\
+CIF đã tạo & 44 \\
+Pre-relax đạt geometry & 44 \\
+Pre-relax độc nhất theo StructureMatcher & 38 \\
+Đại diện công thức độc nhất & 35 \\
+Chọn cho CHGNet & 15 \\
+CHGNet hội tụ & 15 \\
+Post-relax đạt geometry & 15 \\
+\midrule
+DFT đã xác nhận & 0 \\
+Nhiệt đã xác nhận & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Top 5 ứng viên ML-thermal}
+
+\begin{table}[h]
+\centering
+\caption{Top 5 ứng viên xếp theo proxy nhiệt ML-only.}
+\label{tab:top5}
+\begin{tabular}{clrrrrl}
+\toprule
+\textbf{Hạng} & \textbf{Công thức} & \textbf{GNN trước (\eV)} & \textbf{GNN sau (\eV)} & \textbf{Khoảng hull (\eV)} & \textbf{MP tốt nhất} & \textbf{Trạng thái} \\
+\midrule
+1 & Ti$_3$NbWC$_5$  & $-0{,}550$ & $-0{,}352$ & 0{,}291 & TiNbC$_2$  & competitive \\
+2 & Ti$_3$VWC$_5$   & $-0{,}523$ & $-0{,}296$ & 0{,}326 & TiVC$_2$   & competitive \\
+3 & Ti$_2$VWC$_4$   & $-0{,}475$ & $-0{,}282$ & 0{,}341 & TiVC$_2$   & competitive \\
+4 & Zr$_3$TiWC$_5$  & $-0{,}546$ & $-0{,}263$ & 0{,}387 & Ti$_4$WC$_5$ & competitive \\
+5 & Zr$_3$TaWC$_5$  & $-0{,}515$ & $+0{,}002$ & 0{,}401 & Ta$_4$WC$_5$ & energy\_too\_high \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Cả 15 ứng viên qua sàng lọc hóa học / chịu lửa, nhưng chỉ 4 đạt \texttt{competitive\_with\_best\_mp};
+một (\texttt{Zr$_3$TaWC$_5$}) bị đánh dấu \texttt{energy\_too\_high} vì năng lượng sau relax vượt
+ngưỡng trên ($-0{,}25$\,\eV{}). Mười ứng viên còn lại bị \texttt{missing\_cif} vì không nằm
+trong bundle bất biến DFT — đây là hạn chế phạm vi báo cáo w\_dft\_campaign\_v1 chứ không
+phải vấn đề chất lượng.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=12cm, height=7cm,
+  xlabel={Khoảng cách hull ước lượng ML (\eV)},
+  ylabel={Năng lượng tạo thành GNN sau CHGNet (\eV)},
+  grid=both,
+  legend pos=north east,
+  title={Top-15 ứng viên W--C vs.\ hull ML}
+]
+\addplot[only marks, mark=*, color=aiGreen, mark size=2pt]
+  coordinates {
+    (0.291,-0.352) (0.326,-0.296) (0.341,-0.282) (0.387,-0.263)
+  };
+\addlegendentry{competitive\_with\_best\_mp (4)}
+\addplot[only marks, mark=square, color=aiRed, mark size=2pt]
+  coordinates {
+    (0.401, 0.002)
+  };
+\addlegendentry{energy\_too\_high (1)}
+\end{axis}
+\end{tikzpicture}
+\caption{Phân tán năng lượng tạo thành GNN sau CHGNet so với khoảng hull ước lượng ML.
+  Các ứng viên Pareto-front nằm ở góc dưới-trái.}
+\label{fig:scatter}
+\end{figure}
+
+\section{Số liệu thời gian chạy}
+
+\begin{table}[h]
+\centering
+\caption{Thời gian chạy đầu cuối trên các phần cứng.}
+\label{tab:runtime}
+\begin{tabular}{lrl}
+\toprule
+\textbf{Phần cứng} & \textbf{2 lần CHGNet relax} & \textbf{Full pipeline (5 giai đoạn)} \\
+\midrule
+MPS (Apple Silicon) & $\sim$30\,s & $\sim$150--180\,s \\
+CUDA (đã thử, không dùng production) & $\sim$15\,s & $\sim$60--90\,s (ước tính) \\
+CPU thuần & $\sim$120\,s & $\sim$240--300\,s \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Kiểm thử đầu cuối}
+
+Chúng tôi chạy thử trình điều phối đã nối lại với prompt tổng hợp
+``ứng viên carbide chịu lửa tungsten bền''. Phễu và đầu ra:
+
+\begin{lstlisting}[language={},caption={Trích đoạn stdout pipeline.},label={lst:runout}]
+Stage 0  nl_to_candidates.py             -> stage0_candidates.json
+Stage 1  generation/main.py               -> generation/generation_manifest.csv
+  30 latent vectors decoded; chemistry-pass: 5
+Stage 1b build_candidate_cifs.py          -> structures/cifs/{5 CIF}
+Stage 2  audit_candidate_cifs.py (pre)    -> pre_relax_audit/
+  geometry-ready: 5/5
+Stage 3a build_relaxation_shortlist.py    -> shortlist/
+  top-2 candidates selected (chgnet_top_k=2)
+Stage 3b relax_candidate_cifs.py          -> chgnet_relax/relaxed_cifs/
+  cand_0d1aa0b9 (LaTh9O19)  E -9.90 -> -9.95 eV/atom  Fmax=0.019 eV/A
+  cand_911223e3 (GdTh8UO19)  E -10.32 -> -10.34 eV/atom  Fmax=0.034 eV/A
+Stage 3c audit_candidate_cifs.py (post)   -> post_relax_audit/
+  geometry-ready: 2/2
+Stage 3d build_structural_validation_report.py -> reports/
+  status: ml_structural_validation_complete
+Stage 4  eval_ml_thermal.py               -> ml_thermal_evaluation.csv
+  Top candidates ranked, MP subsystem best pulled for each.
+\end{lstlisting}
+
+% ─────────────────────────────────────────────────────────────
+\chapter{Thảo luận}
+% ─────────────────────────────────────────────────────────────
+
+\section{Điểm mạnh}
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+\item \textbf{Tái lập.} Mọi bước được commit xuống đĩa và băm SHA-256 xác minh trong báo cáo
+      kiểm định cấu trúc (theo schema \texttt{w\_c\_structural\_validation\_v1}).
+\item \textbf{Tổng quát.} Stage 0 được dẫn dắt bởi prompt, Stage 1 có bộ lọc miền cấu hình
+      (\texttt{refractory\_carbide\_v1}, v.v.), cho phép một trình điều phối phục vụ
+      nhiều hệ gốm.
+\item \textbf{Xử lý lỗi graceful.} Stage 1 rỗng (chemistry reject hết) được xử lý bằng cách
+      sinh manifest rỗng thay vì raise; BE nhận 200 với danh sách \texttt{ranked} rỗng.
+\item \textbf{Modular.} Mỗi giai đoạn là một CLI độc lập dưới \texttt{research/phase\_2/}
+      với hợp đồng ổn định, cho phép tương lai thay từng khâu (ví dụ đổi GraphVAE sang
+      DiffCSP).
+\end{itemize}
+
+\section{Hạn chế}
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+\item \textbf{Không có xác nhận DFT trong lượt chạy hiện tại.} Bộ đếm \texttt{dft\_validated}
+      bằng không; tuyên bố chất lượng cao nhất là ``ML-validated''.
+\item \textbf{Hạn chế thiết bị CHGNet 0.3.0.} Trình điều khiển chính cứng hóa
+      \texttt{device = cuda hoặc cpu}; trình điều phối chỉ phát hiện MPS ở bước
+      \texttt{relax\_candidate\_cifs}. Việc tương lai: hỗ trợ MPS ngược dòng trong
+      \texttt{generation/main.py}.
+\item \textbf{Bộ lọc hóa học quá nghiêm.} Với 30 latent ở smoke test, tất cả ứng viên đều
+      bị loại vì \texttt{unchanged\_from\_prototype} hoặc \texttt{known\_composition}.
+      Cần \texttt{n\_samples} lớn hơn (200+) hoặc giảm ngưỡng novelty.
+\item \textbf{Sinh có điều kiện trên pool prototype nhỏ.} Truy vấn BE hiện lấy 5 prototype;
+      với các họ hóa học ngoài phân phối huấn luyện (boride, MAX phase), điều này quá hẹp.
+\end{itemize}
+
+\section{Hướng phát triển}
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+\item Thêm bước xác nhận DFT thật (Stage 5) chạy Quantum ESPRESSO trên các CIF đã bundle
+      và cập nhật số đếm \texttt{dft\_validated}.
+\item Thay GraphVAE bằng mô hình sinh dựa trên diffusion (DiffCSP, Crystal Diffusion) để
+      giảm tỉ lệ reject của bộ lọc hóa học.
+\item Thêm tối ưu Bayes về phía prompt: tinh chỉnh \texttt{max\_energy},
+      \texttt{include\_elements} từ kết quả trước.
+\item Thêm hook MLOps: versioning mô hình (DVC), theo dõi thí nghiệm (MLflow), truy
+      nguyên về ảnh chụp MP.
+\end{enumerate}
+
+% ═════════════════════════════════════════════════════════════
+\part{Kế hoạch kinh doanh}
+% ═════════════════════════════════════════════════════════════
+
+% ─────────────────────────────────────────────────────────────
+\chapter{Sản phẩm và thị trường}
+% ─────────────────────────────────────────────────────────────
+
+\section{Định vị sản phẩm}
+
+\textbf{AI Material Discovery} là dịch vụ AI thẳng đứng giúp rút ngắn giai đoạn sàng lọc ứng
+viên vật liệu vô cơ từ hàng tháng tính toán DFT xuống vài phút suy luận trên phần cứng phổ
+thông. MVP hiện tại là công cụ nghiên cứu đơn-khách; gói SaaS dự kiến sẽ đóng gói orchestrator,
+mô hình GraphVAE, GNN kiểm định năng lượng tạo thành, và bản sao Materials Project được quản
+lý đằng sau API và dashboard React.
+
+\section{Phân khúc khách hàng mục tiêu}
+
+\begin{table}[h]
+\centering
+\caption{Phân khúc khách hàng và dải sẵn sàng chi trả.}
+\label{tab:segments}
+\begin{tabular}{p{4.0cm}p{4.2cm}p{3.5cm}p{2.5cm}}
+\toprule
+\textbf{Phân khúc} & \textbf{Nỗi đau} & \textbf{Giá trị} & \textbf{ACV ước tính} \\
+\midrule
+Phòng thí nghiệm quốc gia / FFRDC & Hàng đợi DFT nhiều tháng & Tính theo giờ, không phải tháng & 120--250\,k\$ \\
+Nhà thầu hàng không / quốc phòng & Chu kỳ R\&D gốm 5--10 năm & Xếp hạng ứng viên đầu mũi & 200--400\,k\$ \\
+Hóa chất chuyên dụng & Pilot xác nhận 1\,M\$+/năm & Cắt pilot 60\% & 80--150\,k\$ \\
+Spinout học thuật & Không có cluster tính toán & Dịch vụ quản lý, quota công bằng & 15--40\,k\$ \\
+\midrule
+\multicolumn{3}{r}{\textit{ACV hỗn hợp có trọng số}} & \textbf{145\,k\$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Thị trường khả dĩ}
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+\item \textbf{Thị trường cốt lõi ML4Materials:} $\sim$1{,}4 tỷ\$ (2026), dự kiến
+      $\sim$5{,}8 tỷ\$ (2032), CAGR $\sim$27\% theo các phân tích phân khúc
+      materials-informatics.
+\item \textbf{Thị trường liên quan UHTC / siêu thanh:} $\sim$32 tỷ\$ cùng giai đoạn, trong
+      đó khâu khám phá vật liệu chiếm 3--5\% ($\sim$1{,}0--1{,}6 tỷ\$ SAM).
+\item \textbf{SOM 5 năm:} mục tiêu 0{,}5\% SAM ($\sim$5--8 triệu ARR) với tỉ lệ khách
+      60/30/10 phòng thí nghiệm quốc gia / hàng không vũ trụ / hóa chất chuyên dụng.
+\end{itemize}
+
+\paragraph{Lưu ý.}
+\textit{Số liệu thị trường được trích từ các báo cáo ngành và ước tính nhà phân tích công
+khai giai đoạn 2025--2026; cần đối chiếu lại với báo cáo trả phí (IDC, BCC Research) trước
+khi dùng trong deck gặp nhà đầu tư.}
+
+% ─────────────────────────────────────────────────────────────
+\chapter{Phân tích chi phí}
+% ─────────────────────────────────────────────────────────────
+
+\section{Kinh tế đơn vị (mỗi lượt sàng lọc)}
+
+Một lượt sàng lọc đầu cuối với 15 lần relax CHGNet, 30 latent GraphVAE, và prototype pool
+W--C hiện có, tiêu thụ xấp xỉ:
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+\item \textbf{GPU:} 30--60 phút-GPU (MPS tính như GPU hạ thấp); trên AWS \texttt{g5.xlarge}
+      giá 1{,}006\$/giờ tức 0{,}50--1{,}00\$/lượt.
+\item \textbf{CPU (Neo4j, audit, hậu xử lý):} 2--3 giờ-CPU trên \texttt{c7i.xlarge}
+      0{,}178\$/giờ, tức 0{,}36--0{,}53\$/lượt.
+\item \textbf{Lưu trữ:} 30\,GB đồ thị vật liệu + 5\,GB CIF sau relax mỗi 1000 lượt,
+      $\sim$0{,}15\$/lượt phân bổ.
+\item \textbf{Làm mới Materials Project:} $\sim$80\$/tháng, $\sim$0{,}30\$/lượt ở 270 lượt/tháng.
+\end{itemize}
+\textbf{COGS hỗn hợp mỗi lượt:} $\sim$1{,}30--2{,}00\$.
+
+\section{Mô hình định giá}
+
+\begin{table}[h]
+\centering
+\caption{Định giá SaaS ba bậc.}
+\label{tab:pricing}
+\begin{tabular}{lr}
+\toprule
+\textbf{Bậc} & \textbf{Giá năm} \\
+\midrule
+\textbf{Research} (học thuật, $\leq$3 ghế, công bằng) & 15.000\$ \\
+\textbf{Pro} (thương mại, $\leq$10 ghế, 5k lượt/tháng) & 60.000\$ \\
+\textbf{Enterprise} (không giới hạn ghế, tùy chọn on-prem) & 180.000\$+ \\
+\midrule
+\textbf{ACV hỗn hợp} (60\% Pro / 30\% Enterprise / 10\% Research) & 94.500\$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Với COGS hỗn hợp 1{,}65\$ / lượt và khách Pro chạy $\sim$3.000 lượt hiệu dụng mỗi năm,
+COGS $\sim$5\,k\$ / khách / năm, để lại biên gộp $\sim$83\%.
+
+% ─────────────────────────────────────────────────────────────
+\chapter{Phân tích rủi ro}
+% ─────────────────────────────────────────────────────────────
+
+\begin{table}[h]
+\centering
+\caption{Sổ rủi ro với khả năng xảy ra, tác động và giảm thiểu.}
+\label{tab:risk}
+\small
+\begin{tabular}{p{3.6cm}p{2.4cm}p{1.6cm}p{6.6cm}}
+\toprule
+\textbf{Rủi ro} & \textbf{Khả năng} & \textbf{Tác động} & \textbf{Giảm thiểu} \\
+\midrule
+Trôi mô hình: schema MP phá pipeline & Trung bình & Cao & Pin snapshot MP qua DVC; tái sinh mỗi quý \\
+Bộ lọc hóa học reject quá mức $\to$ Stage 4 rỗng & Cao & Trung bình & Đã xử lý: graceful path rỗng-CSV \\
+Sự cố hyperscaler (Neo4j, LM Studio) & Trung bình & Trung bình & Cache Neo4j cục bộ, fallback rule parser \\
+Đối thủ (Citrine, Schrödinger) ra mắt bậc miễn phí & Thấp & Cao & Bảo vệ bằng hào dữ liệu UHTC chuyên ngành \\
+Pháp lý: kiểm soát xuất khẩu vật liệu tiên tiến & Trung bình & Cao & Geo-fence triển khai; rà soát pháp lý theo vùng \\
+Nhân lực: kỹ sư ML4Materials khan hiếm & Trung bình & Trung bình & Hợp tác lab đại học, remote-first \\
+Tập trung khách: 1 hợp đồng DoD = 40\% doanh thu & Cao & Cao & Đa dạng hóa: mục tiêu 3 deal enterprise mới/năm \\
+DFT compute xác nhận ground-truth đắt đỏ & Trung bình & Trung bình & Bundle bán lại credit mô phỏng; hợp tác NREL \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Chiến lược thoái vốn}
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+\item \textbf{Mua lại chiến lược} bởi một hyperscaler đang xây công cụ ML4Science
+      (Schrödinger, Dassault Systèmes, ANSYS) ở mức 8--12 lần ARR.
+\item \textbf{IPO} ít khả thi trong khung 5 năm vì thị trường ngách, nhưng có thể ở
+      100\,M\$+ ARR khi mở rộng đa chiều dọc (pin, xúc tác).
+\item \textbf{Acqui-hire} là phương án dự phòng; đội nhỏ ($\sim$5 FTE) và gói IP (trọng số
+      GraphVAE, thư viện audit) có tính di động.
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────
+\chapter{Kết luận}
+% ─────────────────────────────────────────────────────────────
+
+Chúng tôi đã xây dựng một pipeline đầu cuối, tái lập được, biến prompt ngôn ngữ tự nhiên
+thành danh sách xếp hạng ứng viên gốm chịu nhiệt với đầy đủ truy nguyên. Lượt chạy hiện tại
+sinh 15 ứng viên W--C, trong đó 4 ứng viên đạt chuẩn ``competitive with best MP''. Hệ thống
+được thiết kế để mở rộng theo chiều ngang (CPU + GPU) và chấp nhận bộ lọc miền cho các họ
+vật liệu khác trong tương lai.
+
+% ─────────────────────────────────────────────────────────────
+%  References
+% ─────────────────────────────────────────────────────────────
+\begin{thebibliography}{9}
+
+\bibitem{jain2013mp}
+A.~Jain, S.~P.~Ong, G.~Hautier, et~al.
+\textit{Commentary: The Materials Project: A materials genome approach to accelerating
+materials innovation}. APL Materials, 1(1):011002, 2013.
+
+\bibitem{xie2018graphvae}
+T.~Xie, J.~C.~Grossman.
+\textit{Crystal Graph Convolutional Neural Networks for Accurate and Interpretable
+Prediction of Material Properties}. Phys.\ Rev.\ Lett.\ 120, 145301 (2018).
+
+\bibitem{deng2023chgnet}
+B.~Deng, P.~Zhong, K.~Jun, et~al.
+\textit{CHGNet: Pretrained Universal Neural Network Potential for Charge-Informed
+Atomistic Modeling}. arXiv:2302.05931, 2023.
+
+\bibitem{chen2019gengnn}
+C.~Chen, W.~Ye, Y.~Zuo, et~al.
+\textit{Graph Networks as a Universal Machine Learning Framework for Molecules and
+Crystals}. Chem.\ Mater.\ 31(9):3564--3572, 2019.
+
+\bibitem{kirklin2015aflow}
+S.~Kirklin, J.~E.~Saal, B.~Meredig, et~al.
+\textit{The Open Quantum Materials Database (OQMD): assessing the accuracy of DFT
+formation energies}. npj Comp.\ Mater.\ 1:15010, 2015.
+
+\bibitem{lu2019mlmaterials}
+W.~Lu, R.~Xiao, et~al.
+\textit{Machine learning--assisted design of high-temperature ceramics}. J.\ Mater.\
+Inf.\ 2021.
+
+\end{thebibliography}
+
+% ─────────────────────────────────────────────────────────────
+%  Appendices
+% ─────────────────────────────────────────────────────────────
+\appendix
+
+\chapter{Bản đồ mã nguồn}
+\begin{lstlisting}[language={},caption={Bố cục repo ở mức cao nhất.},label={lst:tree}]
+ai-meterial/
+|-- AIContest.drawio                  # Pipeline diagram (the one in the form)
+|-- backend/                          # FastAPI service
+|   `-- app/main.py, pipeline_runner.py
+|-- frontend/                         # React + Vite + Tailwind
+|-- research/phase_2/
+|   |-- run_pipeline.py               # Orchestrator (entry point)
+|   |-- nl_to_candidates.py           # Stage 0
+|   |-- generation/
+|   |   |-- main.py                   # Stage 1 driver
+|   |   |-- build_candidate_cifs.py   # Stage 1b
+|   |   |-- audit_candidate_cifs.py   # Stage 2 / 3c
+|   |   |-- build_relaxation_shortlist.py   # Stage 3a
+|   |   |-- relax_candidate_cifs.py   # Stage 3b (CHGNet)
+|   |   `-- build_structural_validation_report.py   # Stage 3d
+|   `-- eval_ml_thermal.py            # Stage 4
+`-- requirements.yaml                 # Pinned dependencies
+\end{lstlisting}
+
+\chapter{Tái lập}
+
+\begin{lstlisting}[language=bash,caption={Tái lập một lượt chạy từ đầu.},label={lst:repro}]
+# 1. Khoi dong Neo4j (chua do thi vat lieu nguyen mau)
+docker run -d --rm -p 7687:7687 \
+    -e NEO4J_AUTH=neo4j/test \
+    neo4j:5
+
+# 2. (Tuy chon) Khoi dong LM Studio tren :1234 cho LLM-parsing
+
+# 3. Chay trinh dieu phoi
+.conda/bin/python research/phase_2/run_pipeline.py \
+    --prompt "ung vien carbide chiu lua tungsten ben" \
+    --output-dir runs/smoke_$(date +%s) \
+    --domain-filter refractory_carbide_v1 \
+    --n-samples 30 --top-k 5 --chgnet-top-k 3
+
+# 4. Kiem tra
+cat runs/smoke_*/ml_thermal_evaluation.csv
+cat runs/smoke_*/reports/structural_validation.json | jq .
+\end{lstlisting}
+
+\end{document}

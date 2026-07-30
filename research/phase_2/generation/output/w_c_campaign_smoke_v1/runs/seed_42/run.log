@@ -1,0 +1,72 @@
+
+======================================================================
+  PHASE 2 GENERATION PIPELINE — 'stable refractory tungsten carbide candidate'
+======================================================================
+  Requirement: stable refractory tungsten carbide candidate
+  Filters: max_energy=0.0, include_elements=['W', 'C']
+  Candidate domain filter: refractory_carbide_v1
+  Device: cpu
+
+============================================================
+PHASE 1: RETRIEVAL — querying Neo4j knowledge graph
+============================================================
+  Dataset stats: 153 materials, energy range [-2.266, 1.432] eV/atom, median=-0.163
+
+  Retrieved 5 known materials:
+    MP_mp-1217128             Ti4WC5          E_form=-0.650 eV/atom
+    MP_mp-1217115             Ti3WC4          E_form=-0.608 eV/atom
+    MP_mp-1215364             Zr4WC5          E_form=-0.607 eV/atom
+    MP_mp-1224191             HfWC2           E_form=-0.423 eV/atom
+    MP_mp-1217819             TaTiWC3         E_form=-0.413 eV/atom
+
+  Found 5 interpolation groups (compatible graph topologies for generation)
+
+============================================================
+PHASE 2: GENERATION — Graph VAE from prototype materials
+============================================================
+  Device: cpu
+  Generation seed: 42
+  Loaded VAE (latent_dim=64) from /Users/koiita/Downloads/ai-meterial/research/phase_2/models/vae_model.pt
+  Loaded GNN from /Users/koiita/Downloads/ai-meterial/research/phase_2/models/gnn_formation_energy_grouped_v1.pt
+  Candidate domain (refractory_carbide_v1): C,Cr,Hf,Mo,Nb,Ta,Ti,V,W,Zr
+  Encoded: MP_mp-1217128 (Ti4WC5)  E=-0.650
+  Encoded: MP_mp-1217115 (Ti3WC4)  E=-0.608
+  Encoded: MP_mp-1215364 (Zr4WC5)  E=-0.607
+  Encoded: MP_mp-1224191 (HfWC2)  E=-0.423
+  Encoded: MP_mp-1217819 (TaTiWC3)  E=-0.413
+
+  Decoding 5 latent vectors ...
+  Building known-composition index for novelty screening ...
+/Users/koiita/Downloads/ai-meterial/.conda/lib/python3.11/functools.py:1001: UserWarning: No Pauling electronegativity for Ne. Setting to NaN. This has no physical meaning, and is mainly done to avoid errors caused by the code expecting a float.
+  val = self.func(instance)
+/Users/koiita/Downloads/ai-meterial/.conda/lib/python3.11/functools.py:1001: UserWarning: No Pauling electronegativity for He. Setting to NaN. This has no physical meaning, and is mainly done to avoid errors caused by the code expecting a float.
+  val = self.func(instance)
+/Users/koiita/Downloads/ai-meterial/.conda/lib/python3.11/functools.py:1001: UserWarning: No Pauling electronegativity for Ar. Setting to NaN. This has no physical meaning, and is mainly done to avoid errors caused by the code expecting a float.
+  val = self.func(instance)
+  Known reduced compositions: 95,647
+    decoded 5/5 (0.2s)
+  Chemistry screen: accepted 1/5; rejected 4 {'unchanged_from_prototype': 3, 'known_composition': 1}
+
+  Generated 1 candidates:
+    cand_ab280568: Ti2WC3                E_form=-0.465  from TaTiWC3
+
+============================================================
+PHASE 3: VALIDATION — GNN scoring and ranking
+============================================================
+  GNN loaded from /Users/koiita/Downloads/ai-meterial/research/phase_2/models/gnn_formation_energy_grouped_v1.pt
+
+  Filtering 1 candidates ...
+  Stable candidates (E_form < 0.5 eV/atom): 1
+
+  Top 5 most stable candidates:
+    1. Ti2WC3                E_form=-0.4651  method=vae_interpolation
+
+  Results saved:
+    Manifest: /Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_smoke_v1/runs/seed_42/generation_manifest.csv
+    Summary:  /Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_smoke_v1/runs/seed_42/generation_summary.json
+  Total time: 30.6s
+
+============================================================
+FINAL RESULT: 1 validated candidates
+============================================================
+  1. Ti2WC3                E_form=-0.4651 eV/atom  method=vae_interpolation

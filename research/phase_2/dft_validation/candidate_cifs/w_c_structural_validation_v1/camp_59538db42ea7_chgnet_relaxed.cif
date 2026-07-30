@@ -1,0 +1,36 @@
+# generated using pymatgen
+data_Ti3VWC5
+_symmetry_space_group_name_H-M   'P 1'
+_cell_length_a   3.04432824
+_cell_length_b   3.04432830
+_cell_length_c   12.61001199
+_cell_angle_alpha   83.06687337
+_cell_angle_beta   90.00000083
+_cell_angle_gamma   119.99999910
+_symmetry_Int_Tables_number   1
+_chemical_formula_structural   Ti3VWC5
+_chemical_formula_sum   'Ti3 V1 W1 C5'
+_cell_volume   100.22332608
+_cell_formula_units_Z   1
+loop_
+ _symmetry_equiv_pos_site_id
+ _symmetry_equiv_pos_as_xyz
+  1  'x, y, z'
+loop_
+ _atom_site_type_symbol
+ _atom_site_label
+ _atom_site_symmetry_multiplicity
+ _atom_site_fract_x
+ _atom_site_fract_y
+ _atom_site_fract_z
+ _atom_site_occupancy
+  Ti  Ti_1  1  0.50113617  1.00227207  0.49659151  1
+  Ti  Ti_2  1  0.10092366  0.20184713  0.69722891  1
+  Ti  Ti_3  1  0.70062095  0.40124191  0.89813713  1
+  V  V_1  1  0.89871263  0.79742520  0.30386232  1
+  W  W_1  1  0.29696567  0.59393178  0.10910474  1
+  C  C_1  1  0.40015834  0.80031664  0.79952487  1
+  C  C_2  1  0.20220743  0.40441489  0.39337757  1
+  C  C_3  1  0.80116390  0.60232833  0.59650804  1
+  C  C_4  1  -0.00057510  -0.00115045  1.00172444  1
+  C  C_5  1  0.59868635  0.19737252  0.20394046  1

@@ -1,0 +1,22 @@
+{
+  "schema_version": "qe_pseudo_manifest_template_v1",
+  "template_status": "documentation_only_not_runnable",
+  "library": "SSSP PBE Precision",
+  "library_version": "2.0",
+  "functional": "PBE",
+  "relativistic": "scalar_relativistic",
+  "source": "https://sssp.materialscloud.org/",
+  "source_metadata": "",
+  "source_metadata_sha256": "",
+  "licenses_acknowledged_by_user": false,
+  "license_note": "Each pseudopotential keeps its original license. Review and accept those terms, preserve attribution, and record the exact release before use.",
+  "elements": {
+    "C": {"filename": "", "sha256": "", "ecutwfc_ry": null, "ecutrho_ry": null},
+    "Ti": {"filename": "", "sha256": "", "ecutwfc_ry": null, "ecutrho_ry": null},
+    "V": {"filename": "", "sha256": "", "ecutwfc_ry": null, "ecutrho_ry": null},
+    "Zr": {"filename": "", "sha256": "", "ecutwfc_ry": null, "ecutrho_ry": null},
+    "Nb": {"filename": "", "sha256": "", "ecutwfc_ry": null, "ecutrho_ry": null},
+    "Ta": {"filename": "", "sha256": "", "ecutwfc_ry": null, "ecutrho_ry": null},
+    "W": {"filename": "", "sha256": "", "ecutwfc_ry": null, "ecutrho_ry": null}
+  }
+}

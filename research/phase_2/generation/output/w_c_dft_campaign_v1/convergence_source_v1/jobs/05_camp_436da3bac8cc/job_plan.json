@@ -1,0 +1,42 @@
+{
+  "workflow_version": "qe_pbe_candidate_relax_v1",
+  "rank": 5,
+  "entry_id": "candidate:camp_436da3bac8cc",
+  "entry_role": "candidate",
+  "source_id": "camp_436da3bac8cc",
+  "candidate_id": "camp_436da3bac8cc",
+  "formula": "Ti2VWC4",
+  "job_status": "convergence_source_only_not_runnable",
+  "blockers": [
+    "production_input_requires_convergence_certificate"
+  ],
+  "source_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/dft_validation/candidate_cifs/w_c_structural_validation_v1/camp_436da3bac8cc_chgnet_relaxed.cif",
+  "source_cif_sha256": "f222e7eaa8af9863b7ee7a3df70fd9997ef4e0400fd32f509ea2356b864bbbcb",
+  "expected_source_cif_sha256": "f222e7eaa8af9863b7ee7a3df70fd9997ef4e0400fd32f509ea2356b864bbbcb",
+  "copied_cif": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_source_v1/jobs/05_camp_436da3bac8cc/input_chgnet_relaxed.cif",
+  "qe_input": "",
+  "qe_input_sha256": "",
+  "qe_output": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_source_v1/jobs/05_camp_436da3bac8cc/vc-relax.out",
+  "run_record": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_source_v1/jobs/05_camp_436da3bac8cc/job_run.json",
+  "qe_scratch_outdir": "./tmp",
+  "kpoints_grid": [
+    13,
+    12,
+    4
+  ],
+  "ecutwfc_ry": 50.0,
+  "ecutrho_ry": 400.0,
+  "base_ecutwfc_ry": 50.0,
+  "base_ecutrho_ry": 400.0,
+  "effective_kpoint_spacing_inv_angstrom": 0.2,
+  "production_settings_certified": false,
+  "convergence_certificate": "",
+  "convergence_certificate_sha256": "",
+  "convergence_certificate_id": "",
+  "convergence_certificate_payload_sha256": "",
+  "certified_execution_provenance": null,
+  "calculation_started": false,
+  "dft_validated": false,
+  "relax_settings_hash": "1984f620cc6e8303f7a88aa6223bfe39ef06ffba9e3a58d40e626a1c3e931da1",
+  "scientific_limit": "Prepared input only. No Quantum ESPRESSO calculation has been run."
+}

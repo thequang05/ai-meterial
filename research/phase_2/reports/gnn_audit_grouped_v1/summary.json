@@ -1,0 +1,30 @@
+{
+  "checkpoint": "research/phase_2/models/gnn_formation_energy_grouped_v1.pt",
+  "split_manifest": "research/phase_2/data/splits/materials_broad_v1_seed42.json",
+  "test_count": 13342,
+  "overall": {
+    "mae_ev_per_atom": 0.08221474857236981,
+    "rmse_ev_per_atom": 0.1579744944215556,
+    "r2": 0.9819004909088999
+  },
+  "by_num_atoms": {
+    "1-16": {
+      "mae_ev_per_atom": 0.0997006139471013,
+      "rmse_ev_per_atom": 0.1929005617169487,
+      "r2": 0.9725488019878581,
+      "count": 5830
+    },
+    "17-64": {
+      "mae_ev_per_atom": 0.06903551425398019,
+      "rmse_ev_per_atom": 0.12586507553346685,
+      "r2": 0.9849847498773774,
+      "count": 5929
+    },
+    "65+": {
+      "mae_ev_per_atom": 0.06717816306324,
+      "rmse_ev_per_atom": 0.11814765698325264,
+      "r2": 0.9859975057451694,
+      "count": 1583
+    }
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "requirement": "stable high-temperature refractory oxide candidate containing tantalum and oxygen",
+  "phase": "generation",
+  "n_retrieved": 30,
+  "n_generated": 20,
+  "n_validated": 20,
+  "target_energy": -1.0,
+  "include_elements": [
+    "Ta",
+    "O"
+  ],
+  "only_elements": null,
+  "retrieval_stats": {
+    "count": 1149,
+    "min": -3.91455508806818,
+    "max": 0.6191367885716671,
+    "mean": -3.0004035982488175,
+    "p05": -3.7327843759999997,
+    "p25": -3.4205474616666662,
+    "median": -3.0831195477499995,
+    "p75": -2.735917034166667,
+    "p95": -1.927164613234
+  },
+  "top_candidates": [
+    {
+      "candidate_id": "cand_5f1b2185",
+      "formula": "O14Y6Ta2",
+      "prototype_uid": "MP_mp-755660",
+      "prototype_formula": "Lu3TaO7",
+      "num_atoms": 22,
+      "num_edges": 432,
+      "gnn_formation_energy": -3.7747,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 0.192
+    },
+    {
+      "candidate_id": "cand_096930a8",
+      "formula": "O14Y6Ta2",
+      "prototype_uid": "MP_mp-769931",
+      "prototype_formula": "Tm3TaO7",
+      "num_atoms": 22,
+      "num_edges": 432,
+      "gnn_formation_energy": -3.7747,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 0.495
+    },
+    {
+      "candidate_id": "cand_2c3e0bdd",
+      "formula": "O14Y6Ta2",
+      "prototype_uid": "MP_mp-756277",
+      "prototype_formula": "Er3TaO7",
+      "num_atoms": 22,
+      "num_edges": 428,
+      "gnn_formation_energy": -3.7158,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 0.172
+    },
+    {
+      "candidate_id": "cand_951e1360",
+      "formula": "O14Y6Ta2",
+      "prototype_uid": "MP_mp-755898",
+      "prototype_formula": "Er3TaO7",
+      "num_atoms": 22,
+      "num_edges": 428,
+      "gnn_formation_energy": -3.7158,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 0.778
+    },
+    {
+      "candidate_id": "cand_82de2b0f",
+      "formula": "O7La3Ta",
+      "prototype_uid": "MP_mp-779096",
+      "prototype_formula": "Tm3TaO7",
+      "num_atoms": 11,
+      "num_edges": 206,
+      "gnn_formation_energy": -3.5358,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 0.212
+    }
+  ],
+  "elapsed_seconds": 1349.6
+}

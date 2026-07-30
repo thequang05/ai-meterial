@@ -1,0 +1,39 @@
+{
+  "requirement": "stable refractory tungsten carbide candidate",
+  "phase": "generation",
+  "n_retrieved": 5,
+  "n_generated": 1,
+  "n_validated": 1,
+  "target_energy": -1.0,
+  "include_elements": [
+    "W",
+    "C"
+  ],
+  "only_elements": null,
+  "retrieval_stats": {
+    "count": 153,
+    "min": -2.2661949231948055,
+    "max": 1.4319428150000006,
+    "mean": -0.29427196425741714,
+    "p05": -1.5626377031740435,
+    "p25": -0.6639869523095238,
+    "median": -0.1628521598437498,
+    "p75": 0.12668352687500217,
+    "p95": 0.794296746625001
+  },
+  "top_candidates": [
+    {
+      "candidate_id": "cand_2c839ea4",
+      "formula": "Sb3WC6O11F12",
+      "prototype_uid": "MP_mp-699606",
+      "prototype_formula": "Sb3WC6O6F17",
+      "num_atoms": 66,
+      "num_edges": 962,
+      "gnn_formation_energy": -1.8738,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 1.0,
+      "oxidation_states": "{\"C\": 4.0, \"F\": -1.0, \"O\": -2.0, \"Sb\": 1.3333333333333333, \"W\": 6.0}"
+    }
+  ],
+  "elapsed_seconds": 30.8
+}

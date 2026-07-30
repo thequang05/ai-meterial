@@ -1,0 +1,44 @@
+\babel@toc {english}{}\relax 
+\contentsline {chapter}{Executive Summary}{5}{chapter*.4}%
+\contentsline {part}{I\hspace {1em}Technical Report}{6}{part.1}%
+\contentsline {chapter}{\numberline {1}Problem statement}{7}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Motivation}{7}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Problem definition}{7}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Scientific limits}{7}{section.1.3}%
+\contentsline {chapter}{\numberline {2}Proposed solution}{8}{chapter.2}%
+\contentsline {section}{\numberline {2.1}System architecture}{8}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Stage-by-stage description}{8}{section.2.2}%
+\contentsline {paragraph}{Stage 0 -- NL $\to $ candidates (rule + LLM).}{8}{section.2.2}%
+\contentsline {paragraph}{Stage 1 -- GraphVAE candidate generation.}{8}{section.2.2}%
+\contentsline {paragraph}{Stage 1b -- CIF reconstruction (\texttt {build\_candidate\_cifs.py}).}{8}{section.2.2}%
+\contentsline {paragraph}{Stage 2 -- Pre-relaxation structural audit.}{9}{section.2.2}%
+\contentsline {paragraph}{Stage 3a -- Relaxation shortlist.}{9}{section.2.2}%
+\contentsline {paragraph}{Stage 3b -- CHGNet relaxation.}{9}{section.2.2}%
+\contentsline {paragraph}{Stage 3c -- Post-relaxation structural audit.}{9}{section.2.2}%
+\contentsline {paragraph}{Stage 3d -- Structural validation report builder.}{9}{section.2.2}%
+\contentsline {paragraph}{Stage 4 -- ML-only thermal evaluation.}{9}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Data assets}{9}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Code structure}{9}{section.2.4}%
+\contentsline {chapter}{\numberline {3}Experimental results}{11}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Reference campaign: W--C refractory carbides}{11}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Top-5 ranked ML-thermal candidates}{11}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Runtime benchmarks}{12}{section.3.3}%
+\contentsline {section}{\numberline {3.4}End-to-end smoke test}{12}{section.3.4}%
+\contentsline {chapter}{\numberline {4}Discussion}{14}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Strengths}{14}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Limitations}{14}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Future work}{14}{section.4.3}%
+\contentsline {part}{II\hspace {1em}Business Plan}{15}{part.2}%
+\contentsline {chapter}{\numberline {5}Product and market}{16}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Product positioning}{16}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Target customer segments}{16}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Total addressable market}{16}{section.5.3}%
+\contentsline {paragraph}{Disclaimer.}{16}{section.5.3}%
+\contentsline {chapter}{\numberline {6}Cost analysis}{17}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Unit economics}{17}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Pricing model}{17}{section.6.2}%
+\contentsline {chapter}{\numberline {7}Risk analysis and mitigation}{18}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Exit strategy}{18}{section.7.1}%
+\contentsline {chapter}{\numberline {8}Conclusion}{19}{chapter.8}%
+\contentsline {chapter}{\numberline {A}Repository map}{21}{appendix.A}%
+\contentsline {chapter}{\numberline {B}Reproducibility}{22}{appendix.B}%

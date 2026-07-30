@@ -1,0 +1,79 @@
+{
+  "requirement": "stable oxide with low formation energy",
+  "phase": "generation",
+  "n_retrieved": 10,
+  "n_generated": 10,
+  "n_validated": 10,
+  "target_energy": null,
+  "include_elements": null,
+  "only_elements": null,
+  "retrieval_stats": {
+    "count": 133420,
+    "min": -4.612092007715515,
+    "max": 5.367633211875001,
+    "mean": -1.3850428030938995,
+    "p05": -3.19661826635911,
+    "p25": -2.3944412021897645,
+    "median": -1.3879226742466302,
+    "p75": -0.42479171038194424,
+    "p95": 0.207703482000185
+  },
+  "top_candidates": [
+    {
+      "candidate_id": "cand_6ac0ccdb",
+      "formula": "F24Th6",
+      "prototype_uid": "MP_mp-1173034",
+      "prototype_formula": "La2Th8O19",
+      "num_atoms": 30,
+      "num_edges": 968,
+      "gnn_formation_energy": -4.4732,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 0.211
+    },
+    {
+      "candidate_id": "cand_0c0aad89",
+      "formula": "F24Th6",
+      "prototype_uid": "MP_mp-1100894",
+      "prototype_formula": "Y2Th8O19",
+      "num_atoms": 30,
+      "num_edges": 968,
+      "gnn_formation_energy": -4.4732,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 0.737
+    },
+    {
+      "candidate_id": "cand_588321c4",
+      "formula": "F12Er4",
+      "prototype_uid": "MP_mp-676629",
+      "prototype_formula": "Sm2Th8O19",
+      "num_atoms": 16,
+      "num_edges": 712,
+      "gnn_formation_energy": -4.4486,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 0.368
+    },
+    {
+      "candidate_id": "cand_40bba950",
+      "formula": "F12Er4",
+      "prototype_uid": "MP_mp-1173030",
+      "prototype_formula": "Y2Th8O19",
+      "num_atoms": 16,
+      "num_edges": 712,
+      "gnn_formation_energy": -4.4486,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 0.895
+    },
+    {
+      "candidate_id": "cand_80532212",
+      "formula": "F12Tb4",
+      "prototype_uid": "MP_mp-31034",
+      "prototype_formula": "ThF4",
+      "num_atoms": 16,
+      "num_edges": 672,
+      "gnn_formation_energy": -4.4479,
+      "generation_method": "vae_interpolation",
+      "latent_alpha": 0.474
+    }
+  ],
+  "elapsed_seconds": 112.4
+}

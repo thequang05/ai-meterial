@@ -1,0 +1,12 @@
+{
+  "dataset_version": "citrination_118353_v2",
+  "source_url": "https://citrination.com/datasets/118353/show_files/",
+  "source_sha256": "54e671c07e23344b4995768e7472bca99ee56b2caab8b2d665fa844a57dd777b",
+  "license_status": "unverified_citrination_dataset_license",
+  "input_entries": 150,
+  "raw_melting_measurements": 87,
+  "unique_reduced_formulas": 82,
+  "rejected_records": {},
+  "usage": "temporary_baseline_only",
+  "not_sufficient_for": "a production refractory-carbide thermal evaluator"
+}

@@ -1,0 +1,144 @@
+{
+  "prompt": "a material that can withstand temperatures of 1500 degrees Celsius and is non-conductive",
+  "n_candidates": 10,
+  "candidates": [
+    {
+      "uid": "MP_mp-1194946",
+      "formula": "Na3U6FeF30",
+      "elements": [
+        "Na",
+        "F",
+        "Fe",
+        "U"
+      ],
+      "formation_energy_per_atom": -3.6942480617675004,
+      "num_atoms": 80,
+      "num_edges": 3140,
+      "graph_index": 78288
+    },
+    {
+      "uid": "MP_mp-556134",
+      "formula": "NaZr2FeF11",
+      "elements": [
+        "Na",
+        "F",
+        "Fe",
+        "Zr"
+      ],
+      "formation_energy_per_atom": -3.6884809168726673,
+      "num_atoms": 15,
+      "num_edges": 528,
+      "graph_index": 111156
+    },
+    {
+      "uid": "MP_mp-1205913",
+      "formula": "Ba2FeF6",
+      "elements": [
+        "Ba",
+        "F",
+        "Fe"
+      ],
+      "formation_energy_per_atom": -3.666576510793332,
+      "num_atoms": 9,
+      "num_edges": 232,
+      "graph_index": 65984
+    },
+    {
+      "uid": "MP_mp-1049241",
+      "formula": "Ba2YFe2F11",
+      "elements": [
+        "Ba",
+        "F",
+        "Fe",
+        "Y"
+      ],
+      "formation_energy_per_atom": -3.660858901963959,
+      "num_atoms": 48,
+      "num_edges": 1530,
+      "graph_index": 15663
+    },
+    {
+      "uid": "MP_mp-1047946",
+      "formula": "BaCaFeF7",
+      "elements": [
+        "Ba",
+        "F",
+        "Fe",
+        "Ca"
+      ],
+      "formation_energy_per_atom": -3.640587005332999,
+      "num_atoms": 40,
+      "num_edges": 1284,
+      "graph_index": 45084
+    },
+    {
+      "uid": "MP_mp-1214736",
+      "formula": "Ba2CaV2FeF14",
+      "elements": [
+        "V",
+        "Ba",
+        "F",
+        "Fe",
+        "Ca"
+      ],
+      "formation_energy_per_atom": -3.6162177623329996,
+      "num_atoms": 40,
+      "num_edges": 1392,
+      "graph_index": 4669
+    },
+    {
+      "uid": "MP_mp-1211073",
+      "formula": "Na3Np6FeF30",
+      "elements": [
+        "Na",
+        "F",
+        "Fe",
+        "Np"
+      ],
+      "formation_energy_per_atom": -3.6111111399549998,
+      "num_atoms": 80,
+      "num_edges": 3116,
+      "graph_index": 37634
+    },
+    {
+      "uid": "MP_mp-1173207",
+      "formula": "Sr5Fe3F19",
+      "elements": [
+        "Sr",
+        "F",
+        "Fe"
+      ],
+      "formation_energy_per_atom": -3.5889268232448157,
+      "num_atoms": 54,
+      "num_edges": 1876,
+      "graph_index": 6526
+    },
+    {
+      "uid": "MP_mvc-16010",
+      "formula": "YFeF5",
+      "elements": [
+        "F",
+        "Fe",
+        "Y"
+      ],
+      "formation_energy_per_atom": -3.5851006058499992,
+      "num_atoms": 7,
+      "num_edges": 230,
+      "graph_index": 16738
+    },
+    {
+      "uid": "MP_mp-1044845",
+      "formula": "Ba2AlFe2F11",
+      "elements": [
+        "Ba",
+        "F",
+        "Fe",
+        "Al"
+      ],
+      "formation_energy_per_atom": -3.5666547048806265,
+      "num_atoms": 48,
+      "num_edges": 1638,
+      "graph_index": 70687
+    }
+  ]
+}

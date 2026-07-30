@@ -1,0 +1,90 @@
+% Compile with: xelatex competition_application_form_en.tex
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=18mm]{geometry}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{english}
+\setmainfont{Arial}
+\setlength{\fboxrule}{0.6pt}
+\usepackage{array,tabularx,enumitem,xcolor,booktabs}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,urlcolor=blue,pdftitle={AI-Materials Competition Application Form}}
+\setlength{\parindent}{0pt}
+\setlist[itemize]{leftmargin=4mm,itemsep=1pt,topsep=2pt}
+\renewcommand{\arraystretch}{1.15}
+\newcommand{\field}[2]{\textbf{#1} & #2\\\hline}
+\newcommand{\formsection}[2]{%
+  \noindent\fcolorbox{black}{white}{\begin{minipage}[t][#1][t]{0.965\linewidth}\vspace{1mm}#2\vspace{1mm}\end{minipage}}\par\vspace{2.5mm}}
+\newcommand{\sectitle}[1]{\textbf{\large #1}\par\vspace{1.5mm}}
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+  {\Large\bfseries AI-Materials Competition\\[2mm] Application Form}\\[13mm]
+  {\LARGE\bfseries AI-Driven High-Temperature Material Discovery}\\[3mm]
+  {\large An end-to-end ML pipeline for ranking refractory ceramic candidates}
+\end{center}
+\vfill
+\renewcommand{\arraystretch}{1.7}
+\begin{tabularx}{0.82\linewidth}{>{\raggedright\arraybackslash}p{48mm}X}
+\hline
+\field{Project title}{AI-Driven High-Temperature Material Discovery}
+\field{Applicant / team}{AI Meterial Team \quad \textit{[replace if required]}}
+\field{Project lead}{\textit{[Name, affiliation, and contact to be completed]}}
+\field{Technology area}{AI for Science; materials informatics; high-temperature ceramics}
+\field{Submission date}{27 July 2026}
+\end{tabularx}
+\vfill
+\begin{center}\small
+This application describes a research and decision-support prototype.\newline
+ML predictions are used for candidate ranking and do not replace experimental or DFT validation.
+\end{center}
+\newpage
+
+\formsection{51mm}{
+\sectitle{1. Project Overview (background, state of the art, objectives, and advantages)}
+High-temperature ceramics and refractory carbides are important for thermal-protection systems, turbine hot sections, and advanced energy equipment. Discovering improved compositions is slow because conventional workflows require repeated expert screening and expensive atomistic calculations.
+
+This project turns a natural-language materials request into an auditable ranked shortlist. It links candidate retrieval, generative composition proposals, crystal-structure reconstruction, structural checks, ML-based relaxation, and comparative scoring against a Materials Project reference set. The objective is to reduce the time needed to identify promising candidates for subsequent scientific validation.
+
+Our advantage is an end-to-end, traceable workflow: each candidate preserves its composition, prototype, structural-audit result, and ranking evidence rather than returning an unexplained recommendation.
+}
+\formsection{65mm}{
+\sectitle{2. Project Plan (technical approach, core functionality, and deliverables)}
+\begin{itemize}
+  \item Retrieve seed materials from a materials knowledge graph using a user request.
+  \item Generate and screen candidate compositions with chemistry constraints; reconstruct CIF structures from compatible prototypes.
+  \item Audit structures before and after CHGNet relaxation, then score candidates with an ML thermal proxy against a same-subsystem reference.
+  \item Deliver a reproducible pipeline, candidate records, ranked shortlists, validation-ready QE/DFT job plans, and a lightweight web interface for inspection.
+\end{itemize}
+The next validation stage uses Quantum ESPRESSO with SSSP PBE Precision pseudopotentials and convergence sweeps. It is deliberately separated from ML ranking so that evidence from DFT can be recorded without overstating model predictions.
+}
+\formsection{50mm}{
+\sectitle{3. Key Innovations \& Unique Features}
+\begin{itemize}
+  \item \textbf{Prompt-to-candidate workflow:} combines natural-language retrieval and generative materials search in one reproducible chain.
+  \item \textbf{Structure-aware screening:} composition proposals are converted to CIFs and checked for chemistry and geometry before ranking.
+  \item \textbf{Transparent confidence boundary:} CHGNet and GNN outputs are labelled as ML ranking signals, not experimental properties or DFT results.
+  \item \textbf{Evidence-preserving handoff:} the pipeline emits immutable run artifacts and job plans for downstream DFT verification.
+\end{itemize}
+}
+\newpage
+
+\formsection{44mm}{
+\sectitle{4. Applications \& Market Potential}
+The platform supports R\&D teams working on ultra-high-temperature ceramics, refractory coatings, and carbide-based components. Likely users include university laboratories, materials startups, aerospace and energy R\&D groups, and contract research organizations. It does not claim to certify materials; it prioritizes candidates and documents why they should be tested first, helping teams use laboratory and DFT capacity more efficiently.
+}
+\formsection{51mm}{
+\sectitle{5. Business Case / Strategy (go-to-market, business model, opportunity, and operations)}
+The initial offer is a research-assist platform and project service: a customer supplies target constraints, the system produces a traceable shortlist, and experts validate a selected set. The business model can combine a hosted workspace subscription with paid campaign execution, custom data integration, and optional DFT-validation support.
+
+The go-to-market path starts with pilot projects in ceramics and refractory-material research groups. Each pilot measures practical outcomes: time to shortlist, number of candidates advanced to simulation, and agreement between ML ranking and follow-up evidence. Operations remain human-in-the-loop: domain experts approve constraints, inspect artifacts, and decide whether a candidate proceeds to computation or experiment.
+}
+\formsection{51mm}{
+\sectitle{6. Additional Information (R\&D process and lessons learned)}
+The prototype has already demonstrated a W--C refractory-carbide campaign with generated candidates, structural audits, CHGNet relaxation, and ML thermal evaluation. A native Quantum ESPRESSO 7.5 environment and an SSSP 1.3.0 pseudopotential manifest have been prepared for the next evidence layer.
+
+Key lesson: scientific credibility depends on preserving uncertainty. The product therefore distinguishes generated hypotheses, ML-ranked candidates, prepared DFT jobs, completed DFT evidence, and experimental validation. This staged design makes results useful today while keeping claims aligned with the evidence actually available.
+}
+\vfill
+\begin{center}\small AI Meterial Team --- Competition Application Form --- English version\end{center}
+\end{document}

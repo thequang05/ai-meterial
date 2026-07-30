@@ -1,0 +1,30 @@
+name: ai-meterial
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - ipykernel
+  - numpy
+  - pandas
+  - scipy
+  - matplotlib
+  - plotly
+  - pytorch=2.5.*
+  - torchvision=0.20.*
+  - torchaudio=2.5.*
+  - torch-geometric=2.6.*
+  - tqdm
+  - pyyaml
+  - requests
+  - python-dotenv
+  - neo4j
+  - pip:
+      - bibtexparser
+      - mcp
+      - mendeleev
+      - pymatgen
+      - scikit-learn
+      - typer

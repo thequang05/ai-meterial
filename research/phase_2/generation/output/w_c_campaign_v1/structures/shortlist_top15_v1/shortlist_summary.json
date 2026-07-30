@@ -1,0 +1,150 @@
+{
+  "shortlist_version": "campaign_relaxation_shortlist_v1",
+  "campaign_manifest": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/campaign_generation_manifest.csv",
+  "structure_manifest": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/structure_manifest.csv",
+  "audit_manifest": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/audit/structure_audit.csv",
+  "candidate_count": 44,
+  "geometry_audit_fail_count": 0,
+  "structurematcher_equivalent_count": 6,
+  "eligible_unique_structure_count": 38,
+  "formula_representative_count": 35,
+  "relaxation_budget": 15,
+  "selected_count": 15,
+  "selection_reason_counts": {
+    "higher_energy_same_formula": 3,
+    "outside_relaxation_budget": 20,
+    "selected_for_chgnet": 15,
+    "structurematcher_equivalent": 6
+  },
+  "selected_gnn_energy_range_ev_per_atom": {
+    "min": -0.5504,
+    "max": -0.2537
+  },
+  "selected_candidates": [
+    {
+      "rank": 1,
+      "candidate_id": "camp_41a80c8b8b30",
+      "formula": "Ti3NbWC5",
+      "gnn_formation_energy_ev_per_atom": -0.5504,
+      "prototype_uid": "MP_mp-1217128",
+      "source_seeds": "[44]"
+    },
+    {
+      "rank": 2,
+      "candidate_id": "camp_015e29be10e0",
+      "formula": "Zr3TiWC5",
+      "gnn_formation_energy_ev_per_atom": -0.5457,
+      "prototype_uid": "MP_mp-1215364",
+      "source_seeds": "[45]"
+    },
+    {
+      "rank": 3,
+      "candidate_id": "camp_59538db42ea7",
+      "formula": "Ti3VWC5",
+      "gnn_formation_energy_ev_per_atom": -0.5225,
+      "prototype_uid": "MP_mp-1217128",
+      "source_seeds": "[45]"
+    },
+    {
+      "rank": 4,
+      "candidate_id": "camp_5e6d485d7147",
+      "formula": "Zr3TaWC5",
+      "gnn_formation_energy_ev_per_atom": -0.5146,
+      "prototype_uid": "MP_mp-1215364",
+      "source_seeds": "[42]"
+    },
+    {
+      "rank": 5,
+      "candidate_id": "camp_436da3bac8cc",
+      "formula": "Ti2VWC4",
+      "gnn_formation_energy_ev_per_atom": -0.4746,
+      "prototype_uid": "MP_mp-1217115",
+      "source_seeds": "[42, 46]"
+    },
+    {
+      "rank": 6,
+      "candidate_id": "camp_c606f3dc26dd",
+      "formula": "Ti2WC3",
+      "gnn_formation_energy_ev_per_atom": -0.4651,
+      "prototype_uid": "MP_mp-1217819",
+      "source_seeds": "[42, 43, 44, 45, 46]"
+    },
+    {
+      "rank": 7,
+      "candidate_id": "camp_09d1c7004fe8",
+      "formula": "Ti3W2C5",
+      "gnn_formation_energy_ev_per_atom": -0.3943,
+      "prototype_uid": "MP_mp-1217128",
+      "source_seeds": "[42]"
+    },
+    {
+      "rank": 8,
+      "candidate_id": "camp_e24c8c77c5a4",
+      "formula": "Ta3NbWC5",
+      "gnn_formation_energy_ev_per_atom": -0.3852,
+      "prototype_uid": "MP_mp-1218023",
+      "source_seeds": "[42]"
+    },
+    {
+      "rank": 9,
+      "candidate_id": "camp_7e59c7dae2e1",
+      "formula": "Ta3VWC5",
+      "gnn_formation_energy_ev_per_atom": -0.3663,
+      "prototype_uid": "MP_mp-1218023",
+      "source_seeds": "[44]"
+    },
+    {
+      "rank": 10,
+      "candidate_id": "camp_e12c99a3cbe3",
+      "formula": "TaTi2W2C5",
+      "gnn_formation_energy_ev_per_atom": -0.364,
+      "prototype_uid": "MP_mp-1217128",
+      "source_seeds": "[45]"
+    },
+    {
+      "rank": 11,
+      "candidate_id": "camp_5d66d98b2e72",
+      "formula": "Ti2MoWC4",
+      "gnn_formation_energy_ev_per_atom": -0.3545,
+      "prototype_uid": "MP_mp-1217115",
+      "source_seeds": "[44, 46]"
+    },
+    {
+      "rank": 12,
+      "candidate_id": "camp_b3d4dae0761d",
+      "formula": "Ta2WC3",
+      "gnn_formation_energy_ev_per_atom": -0.3394,
+      "prototype_uid": "MP_mp-1217819",
+      "source_seeds": "[42, 44, 45, 46]"
+    },
+    {
+      "rank": 13,
+      "candidate_id": "camp_07c19a4f8993",
+      "formula": "Ti2VW2C5",
+      "gnn_formation_energy_ev_per_atom": -0.3098,
+      "prototype_uid": "MP_mp-1217128",
+      "source_seeds": "[46]"
+    },
+    {
+      "rank": 14,
+      "candidate_id": "camp_2fdc7d189aea",
+      "formula": "Ta3MoWC5",
+      "gnn_formation_energy_ev_per_atom": -0.3042,
+      "prototype_uid": "MP_mp-1218023",
+      "source_seeds": "[42, 43, 44, 46]"
+    },
+    {
+      "rank": 15,
+      "candidate_id": "camp_2bba2ed09193",
+      "formula": "Ta3W2C5",
+      "gnn_formation_energy_ev_per_atom": -0.2537,
+      "prototype_uid": "MP_mp-1218023",
+      "source_seeds": "[43, 45]"
+    }
+  ],
+  "outputs": {
+    "decisions_csv": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/shortlist_top15_v1/shortlist_decisions.csv",
+    "relaxation_input_manifest_csv": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_campaign_v1/structures/shortlist_top15_v1/relaxation_input_manifest.csv"
+  },
+  "scientific_limit": "The GNN formation-energy values are ranking predictions only. Selection and subsequent CHGNet relaxation are not DFT or thermal validation."
+}

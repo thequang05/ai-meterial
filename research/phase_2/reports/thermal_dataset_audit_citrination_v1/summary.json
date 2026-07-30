@@ -1,0 +1,26 @@
+{
+  "label_dataset": "/Users/koiita/Downloads/ai-meterial/research/phase_2/data/thermal/citrination_118353_v1/melting_by_reduced_formula.csv",
+  "label_dataset_sha256": "f75b565c270c3fb39be89ed4da2f95866225281ba8b7576964e9911957e27e89",
+  "license_status": "unverified_citrination_dataset_license",
+  "label_count": 82,
+  "matched_formula_count": 79,
+  "unmatched_formula_count": 3,
+  "matched_material_graph_count": 809,
+  "refractory_carbide_formula_count": 0,
+  "refractory_carbide_formulas": [],
+  "high_temperature_formula_count_ge_2000K": 10,
+  "split_manifest": "/Users/koiita/Downloads/ai-meterial/research/phase_2/data/splits/thermal_citrination_v1_seed42.json",
+  "split_counts": {
+    "test": 8,
+    "val": 8,
+    "train": 66
+  },
+  "training_gate": {
+    "approved_for_production_thermal_training": false,
+    "reasons": [
+      "dataset_license_is_not_verified",
+      "insufficient_refractory_carbide_coverage",
+      "dataset_is_too_small_for_a_reliable_thermal_evaluator"
+    ]
+  }
+}
