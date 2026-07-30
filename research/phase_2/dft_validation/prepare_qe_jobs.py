@@ -486,11 +486,27 @@ def _validate_pseudopotentials(
                 blockers.append(f"pseudo_official_identity_mismatch:{symbol}")
                 continue
             try:
-                official_ecutwfc = float(official["cutoff"])
-                if "dual" in official:
-                    official_ecutrho = official_ecutwfc * float(official["dual"])
+                # SSSP 1.3.0 publishes independent ``cutoff_wfc`` and
+                # ``cutoff_rho`` integers. Older releases expose only
+                # ``cutoff`` (or ``cutoff_wfc``) plus either a ``dual``
+                # multiplier or an explicit ``ecutrho``. Mirror the accepted
+                # schema so this check works for either release layout.
+                if "cutoff_wfc" in official:
+                    official_ecutwfc = float(official["cutoff_wfc"])
+                elif "cutoff" in official:
+                    official_ecutwfc = float(official["cutoff"])
                 else:
+                    raise KeyError("cutoff_wfc or cutoff")
+                if "cutoff_rho" in official:
+                    official_ecutrho = float(official["cutoff_rho"])
+                elif "ecutrho" in official:
                     official_ecutrho = float(official["ecutrho"])
+                elif "dual" in official:
+                    official_ecutrho = (
+                        official_ecutwfc * float(official["dual"])
+                    )
+                else:
+                    raise KeyError("cutoff_rho, ecutrho, or dual")
             except (KeyError, TypeError, ValueError):
                 blockers.append(f"pseudo_official_cutoff_invalid:{symbol}")
                 continue

@@ -131,6 +131,44 @@ def _resolve_executable(requested: str) -> Path | None:
     return Path(located).resolve() if located else None
 
 
+# QE 7.5 (and several prior versions) print the PWSCF banner then exit with
+# status 1 when ``pw.x -help`` is invoked with an empty stdin, because the
+# internal ``read_namelists`` step requires a ``&control`` namelist. That exit
+# status is the documented behaviour of a healthy binary and must not fail the
+# preflight probe. We therefore classify ``pw.x -help`` as "passed" when the
+# combined stdout/stderr contains the PWSCF banner regardless of return code,
+# while preserving "nonzero_exit" for genuine launch failures.
+_QE_BANNER_SIGNATURE = "Program PWSCF v."
+
+
+def _looks_like_qe_pwscf_banner(combined_output: str) -> bool:
+    """Return True if the captured output looks like a real QE 7.x PWSCF banner."""
+
+    if not combined_output:
+        return False
+    return _QE_BANNER_SIGNATURE in combined_output
+
+
+def _classify_probe_result(
+    *,
+    kind: str,
+    returncode: int | None,
+    combined_output: str,
+) -> str:
+    """Map a probe ``subprocess.run`` result onto the preflight status enum.
+
+    The classifier treats the ``pw.x -help`` banner-then-error pattern of
+    Quantum ESPRESSO 7.x as a healthy pass, while keeping all other non-zero
+    exits (and the generic ``mpirun --version`` path) fail-closed.
+    """
+
+    if returncode == 0:
+        return "passed"
+    if kind == "pw" and _looks_like_qe_pwscf_banner(combined_output):
+        return "passed"
+    return "nonzero_exit"
+
+
 def _probe_executable(
     path: Path, kind: str, timeout_seconds: int, omp_threads: int = 1,
 ) -> dict[str, Any]:
@@ -177,9 +215,14 @@ def _probe_executable(
     combined = "\n".join(
         part.strip() for part in (completed.stdout, completed.stderr) if part.strip()
     )
+    status = _classify_probe_result(
+        kind=kind,
+        returncode=completed.returncode,
+        combined_output=combined,
+    )
     return {
         "command": command,
-        "status": "passed" if completed.returncode == 0 else "nonzero_exit",
+        "status": status,
         "timeout_seconds": timeout_seconds,
         "returncode": completed.returncode,
         "output": combined[:8000],
@@ -233,9 +276,16 @@ def _probe_mpi_qe_interoperability(
     combined = "\n".join(
         part.strip() for part in (completed.stdout, completed.stderr) if part.strip()
     )
+    # The interoperability command invokes ``pw.x -help`` through one MPI
+    # rank, so the same banner-then-error pattern of QE 7.x applies here.
+    status = _classify_probe_result(
+        kind="pw",
+        returncode=completed.returncode,
+        combined_output=combined,
+    )
     return {
         "command": command,
-        "status": "passed" if completed.returncode == 0 else "nonzero_exit",
+        "status": status,
         "timeout_seconds": timeout_seconds,
         "returncode": completed.returncode,
         "output": combined[:8000],
@@ -719,12 +769,28 @@ def _check_sssp(
                 official.get("md5") or official.get("checksum")
             )
             try:
-                official_ecutwfc = float(official["cutoff"])
-                official_ecutrho = (
-                    official_ecutwfc * float(official["dual"])
-                    if "dual" in official
-                    else float(official["ecutrho"])
-                )
+                # SSSP 1.3.0 (and other recent versions) publish independent
+                # ``cutoff_wfc`` and ``cutoff_rho`` integers. Older releases
+                # expose only ``cutoff`` (or ``cutoff_wfc``) plus either a
+                # ``dual`` multiplier or an explicit ``ecutrho``. Mirror the
+                # preparer's accepted schema so this check does not break on
+                # either release layout.
+                if "cutoff_wfc" in official:
+                    official_ecutwfc = float(official["cutoff_wfc"])
+                elif "cutoff" in official:
+                    official_ecutwfc = float(official["cutoff"])
+                else:
+                    raise KeyError("cutoff_wfc or cutoff")
+                if "cutoff_rho" in official:
+                    official_ecutrho = float(official["cutoff_rho"])
+                elif "ecutrho" in official:
+                    official_ecutrho = float(official["ecutrho"])
+                elif "dual" in official:
+                    official_ecutrho = (
+                        official_ecutwfc * float(official["dual"])
+                    )
+                else:
+                    raise KeyError("cutoff_rho, ecutrho, or dual")
             except (KeyError, TypeError, ValueError):
                 _append_unique(blockers, f"sssp:{symbol}_official_cutoffs_invalid")
             else:

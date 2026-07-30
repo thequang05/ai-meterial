@@ -59,6 +59,80 @@ class PrepareSSSPManifestTests(unittest.TestCase):
                     acknowledge_original_licenses=True,
                 )
 
+    def test_accepts_official_sssp_130_cutoff_schema(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            pseudo_dir = root / "pseudos"
+            pseudo_dir.mkdir()
+            pseudo = pseudo_dir / "C.test.UPF"
+            pseudo.write_text(
+                '<UPF><PP_HEADER element="C" functional="PBE" '
+                'relativistic="scalar"/></UPF>',
+                encoding="utf-8",
+            )
+            metadata = root / "metadata.json"
+            metadata.write_text(json.dumps({
+                "C": {
+                    "filename": pseudo.name,
+                    "md5": hashlib.md5(pseudo.read_bytes()).hexdigest(),
+                    "cutoff_wfc": 45,
+                    "cutoff_rho": 360,
+                    "pseudopotential": "100PAW",
+                }
+            }), encoding="utf-8")
+
+            result = create_manifest(
+                metadata_path=metadata,
+                pseudo_dir=pseudo_dir,
+                output_path=root / "manifest.json",
+                library_name="SSSP PBE Precision",
+                library_version="1.3.0",
+                elements=["C"],
+                acknowledge_original_licenses=True,
+            )
+
+            self.assertEqual(result["elements"]["C"]["ecutwfc_ry"], 45)
+            self.assertEqual(result["elements"]["C"]["ecutrho_ry"], 360)
+            self.assertEqual(result["elements"]["C"]["dual"], 8)
+
+    def test_accepts_legacy_upf_v1_header_used_by_sssp(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            pseudo_dir = root / "pseudos"
+            pseudo_dir.mkdir()
+            pseudo = pseudo_dir / "ti.test.UPF"
+            pseudo.write_text(
+                "<PP_INFO>\nThe Pseudo was generated with a "
+                "Scalar-Relativistic Calculation\n</PP_INFO>\n"
+                "<PP_HEADER>\n   0 Version Number\n  Ti Element\n"
+                "   US Ultrasoft pseudopotential\n    T NLCC\n"
+                " SLA  PW   PBX  PBC    PBE Exchange-Correlation functional\n"
+                "</PP_HEADER>\n",
+                encoding="utf-8",
+            )
+            metadata = root / "metadata.json"
+            metadata.write_text(json.dumps({
+                "Ti": {
+                    "filename": pseudo.name,
+                    "md5": hashlib.md5(pseudo.read_bytes()).hexdigest(),
+                    "cutoff_wfc": 40,
+                    "cutoff_rho": 320,
+                }
+            }), encoding="utf-8")
+
+            result = create_manifest(
+                metadata_path=metadata,
+                pseudo_dir=pseudo_dir,
+                output_path=root / "manifest.json",
+                library_name="SSSP PBE Precision",
+                library_version="1.3.0",
+                elements=["Ti"],
+                acknowledge_original_licenses=True,
+            )
+
+            self.assertEqual(result["elements"]["Ti"]["upf_header_element"], "Ti")
+            self.assertIn("PBE", result["elements"]["Ti"]["upf_header_functional"])
+
     def test_rejects_missing_official_md5(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

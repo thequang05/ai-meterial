@@ -1,0 +1,49 @@
+&CONTROL
+  calculation = 'scf',
+  disk_io = 'low',
+  outdir = '/private/tmp/qe_scratch/qe_pbe_convergence_sweep_v1/campaign_21b126df4170d1e9/010_cv_camp_59538db42ea7_cutoff_01_25576f6ddf',
+  prefix = 'cv_camp_59538db42ea7_cutoff_01_25576f6ddf',
+  pseudo_dir = '../../pseudos',
+  restart_mode = 'from_scratch',
+  tprnfor = .TRUE.,
+  tstress = .TRUE.,
+/
+&SYSTEM
+  degauss = 0.01,
+  ecutrho = 459.99999999999994,
+  ecutwfc = 57.49999999999999,
+  input_dft = 'PBE',
+  occupations = 'smearing',
+  smearing = 'mv',
+  ibrav = 0,
+  nat = 10,
+  ntyp = 4,
+/
+&ELECTRONS
+  conv_thr = 1d-10,
+  diagonalization = 'david',
+  electron_maxstep = 200,
+  mixing_beta = 0.3,
+/
+ATOMIC_SPECIES
+  C  12.0107 C.pbe-n-kjpaw_psl.1.0.0.UPF
+  Ti  47.8670 ti_pbe_v1.4.uspp.F.UPF
+  V  50.9415 v_pbe_v1.4.uspp.F.UPF
+  W  183.8400 W_pbe_v1.2.uspp.F.UPF
+ATOMIC_POSITIONS crystal
+  Ti 0.501136 0.002272 0.496592
+  Ti 0.100924 0.201847 0.697229
+  Ti 0.700621 0.401242 0.898137
+  V 0.898713 0.797425 0.303862
+  W 0.296966 0.593932 0.109105
+  C 0.400158 0.800317 0.799525
+  C 0.202207 0.404415 0.393378
+  C 0.801164 0.602328 0.596508
+  C 0.999425 0.998850 0.001724
+  C 0.598686 0.197373 0.203940
+K_POINTS automatic
+  19 19 4 0 0 0
+CELL_PARAMETERS angstrom
+  3.044328 0.000000 -0.000000
+  -1.522164 2.610729 0.367483
+  0.000000 0.000000 12.610012

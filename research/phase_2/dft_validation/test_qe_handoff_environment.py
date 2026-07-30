@@ -207,6 +207,44 @@ class QEHandoffEnvironmentTests(unittest.TestCase):
                 self.assertEqual(run.call_args.kwargs["env"][variable], "1")
             self.assertEqual(result["status"], "passed")
 
+    def test_qe_pwscf_banner_with_exit_one_is_classified_as_passed(self):
+        # QE 7.x prints the PWSCF banner, waits for input, then exits with
+        # status 1 when ``pw.x -help`` is invoked with empty stdin. A healthy
+        # binary must therefore be classified as "passed" even with non-zero
+        # return code, both for the standalone probe and the MPI/QE probe.
+        banner = (
+            "Program PWSCF v.7.5 starts on 14Jul2026 at 20:40: 6\n"
+            "This program is part of the open-source Quantum ESPRESSO suite\n"
+            "Error in routine read_namelists (2):\n"
+            " could not find namelist &control\n"
+            "stopping ...\n"
+        )
+        standalone = handoff._classify_probe_result(
+            kind="pw",
+            returncode=1,
+            combined_output=banner,
+        )
+        self.assertEqual(standalone, "passed")
+        interoperability = handoff._classify_probe_result(
+            kind="pw",
+            returncode=1,
+            combined_output=banner,
+        )
+        self.assertEqual(interoperability, "passed")
+
+    def test_non_banner_nonzero_exit_is_classified_as_failed(self):
+        # A non-QE failure (e.g. a wrapper script that exits with code 1 and
+        # no PWSCF banner) must still fail closed and be reported as
+        # ``nonzero_exit`` regardless of probe kind.
+        for kind in ("pw", "mpi"):
+            with self.subTest(kind=kind):
+                status = handoff._classify_probe_result(
+                    kind=kind,
+                    returncode=1,
+                    combined_output="synthetic wrapper failure: command not found",
+                )
+                self.assertEqual(status, "nonzero_exit")
+
     @patch.object(
         handoff,
         "_check_python_environment",
@@ -443,6 +481,56 @@ class QEHandoffEnvironmentTests(unittest.TestCase):
 
             self.assertEqual(report["status"], "blocked")
             self.assertIn("sssp:C_official_identity_mismatch", report["blockers"])
+
+    @patch.object(
+        handoff,
+        "_check_python_environment",
+        return_value={"status": "passed", "version": "test"},
+    )
+    @patch.object(
+        handoff,
+        "_describe_executable",
+        return_value={
+            "description": "Mach-O 64-bit executable arm64",
+            "architectures": ["arm64"],
+            "inspection_error": None,
+        },
+    )
+    def test_accepts_sssp_v1_3_0_cutoff_wfc_cutoff_rho_metadata(
+        self, _describe, _python,
+    ):
+        # SSSP 1.3.0 publishes independent ``cutoff_wfc`` and ``cutoff_rho``
+        # instead of the legacy ``cutoff``+``dual`` pair. The checker must
+        # accept this layout without flagging ``official_cutoffs_invalid``.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            files = self._fixtures(root)
+            upf = files["upf"]
+            upf_md5 = hashlib.md5(upf.read_bytes()).hexdigest()
+            metadata = json.loads(files["metadata"].read_text(encoding="utf-8"))
+            metadata["C"] = {
+                "filename": upf.name,
+                "md5": upf_md5,
+                "cutoff_wfc": 45,
+                "cutoff_rho": 360,
+            }
+            files["metadata"].write_text(json.dumps(metadata), encoding="utf-8")
+            manifest = json.loads(files["manifest"].read_text(encoding="utf-8"))
+            manifest["source_metadata_sha256"] = hashlib.sha256(
+                files["metadata"].read_bytes()
+            ).hexdigest()
+            files["manifest"].write_text(json.dumps(manifest), encoding="utf-8")
+
+            report = self._run(root, files)
+
+            self.assertEqual(report["status"], "ready")
+            self.assertTrue(report["ready_for_qe_handoff"])
+            self.assertEqual(report["blockers"], [])
+            self.assertTrue(
+                report["checks"]["sssp"]["elements"]["C"][
+                    "official_identity_verified"
+                ]
+            )
 
     def test_rejects_unsafe_probe_timeout_before_any_probe(self):
         with self.assertRaisesRegex(ValueError, "between 1 and 30"):

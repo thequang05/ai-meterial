@@ -1,0 +1,13 @@
+\babel@toc {english}{}\relax 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces End-to-end pipeline architecture. Solid arrows represent runtime data flow; the dashed edge between Neo4j and Stage~1 represents independent retrieval performed inside the GraphVAE driver.\relax }}{8}{figure.caption.5}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Scatter of post-CHGNet GNN formation energy vs.\ ML-estimated hull gap. Pareto-front candidates are in the lower-left.\relax }}{12}{figure.caption.9}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }

@@ -1,0 +1,98 @@
+{
+  "schema_version": "qe_pseudo_manifest_v1",
+  "library": "SSSP PBE Precision",
+  "library_version": "1.3.0",
+  "functional": "PBE",
+  "relativistic": "scalar_relativistic",
+  "source_metadata": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/sssp/SSSP_1.3.0_PBE_precision.json",
+  "source_metadata_sha256": "7b7b648915e54c8397cd8143a7385c17eeed3104ad1236cecd905126d338a4e3",
+  "pseudo_dir_at_manifest_creation": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/sssp/SSSP_1.3.0_PBE_precision",
+  "licenses_acknowledged_by_user": true,
+  "license_note": "Each SSSP pseudopotential retains its original license; preserve the release acknowledgements and cite the individual sources.",
+  "elements": {
+    "C": {
+      "filename": "C.pbe-n-kjpaw_psl.1.0.0.UPF",
+      "sha256": "9900d1efd50b9848e31849f39094b33348486b400ee51e0f3922f716137cf3d7",
+      "original_md5": "5d2aebdfa2cae82b50a7e79e9516da0f",
+      "ecutwfc_ry": 45.0,
+      "ecutrho_ry": 360.0,
+      "dual": 8.0,
+      "pseudopotential_family": "100PAW",
+      "upf_header_element": "C",
+      "upf_header_functional": "SLA  PW   PBX  PBC",
+      "upf_header_relativistic": "scalar"
+    },
+    "Ti": {
+      "filename": "ti_pbe_v1.4.uspp.F.UPF",
+      "sha256": "747afa52fa17dc061e9eff72bcea534e81ffa5a4a5d33af3eb8fc9f1b3aee580",
+      "original_md5": "88a00a6731bd790ddea75d31a80cb452",
+      "ecutwfc_ry": 40.0,
+      "ecutrho_ry": 320.0,
+      "dual": 8.0,
+      "pseudopotential_family": "GBRV-1.4",
+      "upf_header_element": "Ti",
+      "upf_header_functional": "SLA  PW   PBX  PBC    PBE",
+      "upf_header_relativistic": "scalar-relativistic"
+    },
+    "V": {
+      "filename": "v_pbe_v1.4.uspp.F.UPF",
+      "sha256": "4fc8afef98a911c82908fb9142edf71b2f598dd98762b355a6d291d834fb6d0c",
+      "original_md5": "22b79981416ebb76fdaf5b1b8640f6fb",
+      "ecutwfc_ry": 40.0,
+      "ecutrho_ry": 320.0,
+      "dual": 8.0,
+      "pseudopotential_family": "GBRV-1.4",
+      "upf_header_element": "V",
+      "upf_header_functional": "SLA  PW   PBX  PBC    PBE",
+      "upf_header_relativistic": "scalar-relativistic"
+    },
+    "Zr": {
+      "filename": "Zr_pbe_v1.uspp.F.UPF",
+      "sha256": "d56e2997788a4b3d90bb829416161ff9eb6ccdfe377cb52acfbdd2175f4b4acf",
+      "original_md5": "5db81b1e868ab7776c4564c113de050b",
+      "ecutwfc_ry": 30.0,
+      "ecutrho_ry": 240.0,
+      "dual": 8.0,
+      "pseudopotential_family": "GBRV-1.2",
+      "upf_header_element": "Zr",
+      "upf_header_functional": "SLA  PW   PBE  PBE     PBE",
+      "upf_header_relativistic": "scalar-relativistic"
+    },
+    "Nb": {
+      "filename": "Nb.pbe-spn-kjpaw_psl.0.3.0.UPF",
+      "sha256": "ccf07218ea34daaa63ff57d9f44ca8b4b529728cccbc8f74dd5fc804ac01e48e",
+      "original_md5": "411d72ad547312f8017e2943ceca08cc",
+      "ecutwfc_ry": 40.0,
+      "ecutrho_ry": 320.0,
+      "dual": 8.0,
+      "pseudopotential_family": "031PAW",
+      "upf_header_element": "Nb",
+      "upf_header_functional": "SLA  PW   PBX  PBC",
+      "upf_header_relativistic": "scalar"
+    },
+    "Ta": {
+      "filename": "Ta_pbe_v1.uspp.F.UPF",
+      "sha256": "e0850b94d7007d47691d131db1fa5ffdaaa6f6a573c1ebf1fb425e46ed891ee1",
+      "original_md5": "f8bbe9446314a3b8ea5d9f3e3836c939",
+      "ecutwfc_ry": 50.0,
+      "ecutrho_ry": 400.0,
+      "dual": 8.0,
+      "pseudopotential_family": "GBRV-1.2",
+      "upf_header_element": "Ta",
+      "upf_header_functional": "SLA  PW   PBE  PBE     PBE",
+      "upf_header_relativistic": "scalar-relativistic"
+    },
+    "W": {
+      "filename": "W_pbe_v1.2.uspp.F.UPF",
+      "sha256": "3cb024d05ba2413340c9e993bc149bf94d44fb23e609642466d87ca30c88c569",
+      "original_md5": "9c083fa34c2a2ea0f02f1f893e16e1c8",
+      "ecutwfc_ry": 50.0,
+      "ecutrho_ry": 400.0,
+      "dual": 8.0,
+      "pseudopotential_family": "GBRV-1.2",
+      "upf_header_element": "W",
+      "upf_header_functional": "SLA  PW   PBE  PBE     PBE",
+      "upf_header_relativistic": "scalar-relativistic"
+    }
+  }
+}

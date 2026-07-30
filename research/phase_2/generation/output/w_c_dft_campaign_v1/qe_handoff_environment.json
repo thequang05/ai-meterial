@@ -1,0 +1,321 @@
+{
+  "blockers": [],
+  "checked_at_utc": "2026-07-14T13:47:34.233242+00:00",
+  "checks": {
+    "datasets": {
+      "materials_csv": {
+        "exists": true,
+        "full_hash_or_scan_performed": false,
+        "lightweight_format_check": true,
+        "path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/data/processed/materials.csv",
+        "readable": true,
+        "size_bytes": 28832309,
+        "status": "passed"
+      },
+      "raw_mp_json": {
+        "exists": true,
+        "full_hash_or_scan_performed": false,
+        "lightweight_format_check": true,
+        "path": "/Users/koiita/Downloads/ai-meterial/data/mp.2019.04.01.json",
+        "readable": true,
+        "size_bytes": 4033311064,
+        "status": "passed"
+      },
+      "structure_cache": {
+        "exists": true,
+        "full_hash_or_scan_performed": false,
+        "lightweight_format_check": true,
+        "path": "/Users/koiita/Downloads/ai-meterial/research/phase_3/cache/structures.sqlite",
+        "readable": true,
+        "size_bytes": 343244800,
+        "status": "passed"
+      }
+    },
+    "executables": {
+      "mpi": {
+        "architectures": [
+          "arm64"
+        ],
+        "exists": true,
+        "file_description": "Mach-O 64-bit executable arm64",
+        "host_architecture": "arm64",
+        "is_executable": true,
+        "native_architecture_verified": true,
+        "probe": {
+          "command": [
+            "/opt/homebrew/Cellar/open-mpi/5.0.9/bin/mpirun",
+            "--version"
+          ],
+          "output": "mpirun (Open MPI) 5.0.9\n\nReport bugs to https://www.open-mpi.org/community/help/",
+          "returncode": 0,
+          "status": "passed",
+          "timeout_seconds": 5
+        },
+        "probe_requested": true,
+        "requested": "/opt/homebrew/bin/mpirun",
+        "resolved_path": "/opt/homebrew/Cellar/open-mpi/5.0.9/bin/mpirun",
+        "sha256": "9959a47f45dc84299928bf2d82d46199635f945eb590e01cc99840ce5809948d",
+        "status": "passed"
+      },
+      "mpi_qe_interoperability": {
+        "command": [
+          "/opt/homebrew/Cellar/open-mpi/5.0.9/bin/mpirun",
+          "-np",
+          "1",
+          "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/bin/pw.x",
+          "-help"
+        ],
+        "mpi_resolved_path": "/opt/homebrew/Cellar/open-mpi/5.0.9/bin/mpirun",
+        "output": "Program PWSCF v.7.5 starts on 14Jul2026 at 20:47:33 \n\n     This program is part of the open-source Quantum ESPRESSO suite\n     for quantum simulation of materials; please cite\n         \"P. Giannozzi et al., J. Phys.:Condens. Matter 21 395502 (2009);\n         \"P. Giannozzi et al., J. Phys.:Condens. Matter 29 465901 (2017);\n         \"P. Giannozzi et al., J. Chem. Phys. 152 154105 (2020);\n          URL http://www.quantum-espresso.org\", \n     in publications or presentations arising from this work. More details at\n     http://www.quantum-espresso.org/quote\n\n     Parallel version (MPI & OpenMP), running on       1 processor cores\n     Number of MPI processes:                 1\n     Threads/MPI process:                     1\n\n     MPI processes distributed on     1 nodes\n     0 MiB available memory on the printing compute node when the environment starts\n\n     Waiting for input...\n     Reading input from standard input\n\n %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n     Error in routine  read_namelists (2):\n      could not find namelist &control\n %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n     stopping ...\nfrom test_input_xml: input file not opened or empty\n--------------------------------------------------------------------------\nMPI_ABORT was invoked on rank 0 in communicator MPI_COMM_WORLD\n  Proc: [[46057,1],0]\n  Errorcode: 1\n\nNOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.\nYou may or may not see output from other processes, depending on\nexactly when Open MPI kills them.\n--------------------------------------------------------------------------\n--------------------------------------------------------------------------\n\nprterun has exited due to process rank 0 with PID 0 on node KoiiTa calling\n\"abort\". This may have caused other processes in the application to be\nterminated by signals sent by prterun (as reported here).\n--------------------------------------------------------------------------\n\u0000",
+        "probe_requested": true,
+        "pw_resolved_path": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/bin/pw.x",
+        "returncode": 1,
+        "starts_dft_calculation": false,
+        "status": "passed",
+        "timeout_seconds": 5
+      },
+      "pw": {
+        "architectures": [
+          "arm64"
+        ],
+        "exists": true,
+        "file_description": "Mach-O 64-bit executable arm64",
+        "host_architecture": "arm64",
+        "is_executable": true,
+        "native_architecture_verified": true,
+        "probe": {
+          "command": [
+            "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/bin/pw.x",
+            "-help"
+          ],
+          "output": "Program PWSCF v.7.5 starts on 14Jul2026 at 20:47:33 \n\n     This program is part of the open-source Quantum ESPRESSO suite\n     for quantum simulation of materials; please cite\n         \"P. Giannozzi et al., J. Phys.:Condens. Matter 21 395502 (2009);\n         \"P. Giannozzi et al., J. Phys.:Condens. Matter 29 465901 (2017);\n         \"P. Giannozzi et al., J. Chem. Phys. 152 154105 (2020);\n          URL http://www.quantum-espresso.org\", \n     in publications or presentations arising from this work. More details at\n     http://www.quantum-espresso.org/quote\n\n     Parallel version (MPI & OpenMP), running on       1 processor cores\n     Number of MPI processes:                 1\n     Threads/MPI process:                     1\n\n     MPI processes distributed on     1 nodes\n     0 MiB available memory on the printing compute node when the environment starts\n\n     Waiting for input...\n     Reading input from standard input\n\n %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n     Error in routine  read_namelists (2):\n      could not find namelist &control\n %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n     stopping ...\nfrom test_input_xml: input file not opened or empty",
+          "returncode": 1,
+          "status": "passed",
+          "timeout_seconds": 5
+        },
+        "probe_requested": true,
+        "requested": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/bin/pw.x",
+        "resolved_path": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/bin/pw.x",
+        "sha256": "0b5f4bcdef7b7830b0aaec1ec2feac9b41544212bda7ed5263ce9c6efce425f3",
+        "status": "passed"
+      }
+    },
+    "python": {
+      "ase_version": "3.29.0",
+      "executable": "/Users/koiita/Downloads/ai-meterial/.conda/bin/python3.11",
+      "implementation": "CPython",
+      "minimum_supported_version": "3.10",
+      "numpy_version": "2.4.6",
+      "pymatgen_version": "2026.5.4",
+      "status": "passed",
+      "version": "3.11.15"
+    },
+    "sssp": {
+      "elements": {
+        "C": {
+          "actual_md5": "5d2aebdfa2cae82b50a7e79e9516da0f",
+          "actual_sha256": "9900d1efd50b9848e31849f39094b33348486b400ee51e0f3922f716137cf3d7",
+          "cutoffs_valid": true,
+          "expected_original_md5": "5d2aebdfa2cae82b50a7e79e9516da0f",
+          "expected_sha256": "9900d1efd50b9848e31849f39094b33348486b400ee51e0f3922f716137cf3d7",
+          "filename": "C.pbe-n-kjpaw_psl.1.0.0.UPF",
+          "official_identity_verified": true,
+          "path": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/sssp/SSSP_1.3.0_PBE_precision/C.pbe-n-kjpaw_psl.1.0.0.UPF",
+          "status": "passed",
+          "upf_header": {
+            "element": "C",
+            "functional": "SLA  PW   PBX  PBC",
+            "relativistic": "scalar"
+          },
+          "upf_header_verified": true
+        },
+        "Nb": {
+          "actual_md5": "411d72ad547312f8017e2943ceca08cc",
+          "actual_sha256": "ccf07218ea34daaa63ff57d9f44ca8b4b529728cccbc8f74dd5fc804ac01e48e",
+          "cutoffs_valid": true,
+          "expected_original_md5": "411d72ad547312f8017e2943ceca08cc",
+          "expected_sha256": "ccf07218ea34daaa63ff57d9f44ca8b4b529728cccbc8f74dd5fc804ac01e48e",
+          "filename": "Nb.pbe-spn-kjpaw_psl.0.3.0.UPF",
+          "official_identity_verified": true,
+          "path": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/sssp/SSSP_1.3.0_PBE_precision/Nb.pbe-spn-kjpaw_psl.0.3.0.UPF",
+          "status": "passed",
+          "upf_header": {
+            "element": "Nb",
+            "functional": "SLA  PW   PBX  PBC",
+            "relativistic": "scalar"
+          },
+          "upf_header_verified": true
+        },
+        "Ta": {
+          "actual_md5": "f8bbe9446314a3b8ea5d9f3e3836c939",
+          "actual_sha256": "e0850b94d7007d47691d131db1fa5ffdaaa6f6a573c1ebf1fb425e46ed891ee1",
+          "cutoffs_valid": true,
+          "expected_original_md5": "f8bbe9446314a3b8ea5d9f3e3836c939",
+          "expected_sha256": "e0850b94d7007d47691d131db1fa5ffdaaa6f6a573c1ebf1fb425e46ed891ee1",
+          "filename": "Ta_pbe_v1.uspp.F.UPF",
+          "official_identity_verified": true,
+          "path": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/sssp/SSSP_1.3.0_PBE_precision/Ta_pbe_v1.uspp.F.UPF",
+          "status": "passed",
+          "upf_header": {
+            "element": "Ta",
+            "functional": "SLA  PW   PBE  PBE     PBE",
+            "relativistic": "scalar-relativistic"
+          },
+          "upf_header_verified": true
+        },
+        "Ti": {
+          "actual_md5": "88a00a6731bd790ddea75d31a80cb452",
+          "actual_sha256": "747afa52fa17dc061e9eff72bcea534e81ffa5a4a5d33af3eb8fc9f1b3aee580",
+          "cutoffs_valid": true,
+          "expected_original_md5": "88a00a6731bd790ddea75d31a80cb452",
+          "expected_sha256": "747afa52fa17dc061e9eff72bcea534e81ffa5a4a5d33af3eb8fc9f1b3aee580",
+          "filename": "ti_pbe_v1.4.uspp.F.UPF",
+          "official_identity_verified": true,
+          "path": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/sssp/SSSP_1.3.0_PBE_precision/ti_pbe_v1.4.uspp.F.UPF",
+          "status": "passed",
+          "upf_header": {
+            "element": "Ti",
+            "functional": "SLA  PW   PBX  PBC    PBE",
+            "relativistic": "scalar-relativistic"
+          },
+          "upf_header_verified": true
+        },
+        "V": {
+          "actual_md5": "22b79981416ebb76fdaf5b1b8640f6fb",
+          "actual_sha256": "4fc8afef98a911c82908fb9142edf71b2f598dd98762b355a6d291d834fb6d0c",
+          "cutoffs_valid": true,
+          "expected_original_md5": "22b79981416ebb76fdaf5b1b8640f6fb",
+          "expected_sha256": "4fc8afef98a911c82908fb9142edf71b2f598dd98762b355a6d291d834fb6d0c",
+          "filename": "v_pbe_v1.4.uspp.F.UPF",
+          "official_identity_verified": true,
+          "path": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/sssp/SSSP_1.3.0_PBE_precision/v_pbe_v1.4.uspp.F.UPF",
+          "status": "passed",
+          "upf_header": {
+            "element": "V",
+            "functional": "SLA  PW   PBX  PBC    PBE",
+            "relativistic": "scalar-relativistic"
+          },
+          "upf_header_verified": true
+        },
+        "W": {
+          "actual_md5": "9c083fa34c2a2ea0f02f1f893e16e1c8",
+          "actual_sha256": "3cb024d05ba2413340c9e993bc149bf94d44fb23e609642466d87ca30c88c569",
+          "cutoffs_valid": true,
+          "expected_original_md5": "9c083fa34c2a2ea0f02f1f893e16e1c8",
+          "expected_sha256": "3cb024d05ba2413340c9e993bc149bf94d44fb23e609642466d87ca30c88c569",
+          "filename": "W_pbe_v1.2.uspp.F.UPF",
+          "official_identity_verified": true,
+          "path": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/sssp/SSSP_1.3.0_PBE_precision/W_pbe_v1.2.uspp.F.UPF",
+          "status": "passed",
+          "upf_header": {
+            "element": "W",
+            "functional": "SLA  PW   PBE  PBE     PBE",
+            "relativistic": "scalar-relativistic"
+          },
+          "upf_header_verified": true
+        },
+        "Zr": {
+          "actual_md5": "5db81b1e868ab7776c4564c113de050b",
+          "actual_sha256": "d56e2997788a4b3d90bb829416161ff9eb6ccdfe377cb52acfbdd2175f4b4acf",
+          "cutoffs_valid": true,
+          "expected_original_md5": "5db81b1e868ab7776c4564c113de050b",
+          "expected_sha256": "d56e2997788a4b3d90bb829416161ff9eb6ccdfe377cb52acfbdd2175f4b4acf",
+          "filename": "Zr_pbe_v1.uspp.F.UPF",
+          "official_identity_verified": true,
+          "path": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/sssp/SSSP_1.3.0_PBE_precision/Zr_pbe_v1.uspp.F.UPF",
+          "status": "passed",
+          "upf_header": {
+            "element": "Zr",
+            "functional": "SLA  PW   PBE  PBE     PBE",
+            "relativistic": "scalar-relativistic"
+          },
+          "upf_header_verified": true
+        }
+      },
+      "manifest_path": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/sssp/sssp_pbe_precision_1.3.0_locked.json",
+      "manifest_sha256": "0b47858c7b6e5d52748f836101073d1ec95b32c9c877137071e7f03d4b45f511",
+      "metadata_path": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/sssp/SSSP_1.3.0_PBE_precision.json",
+      "metadata_sha256": "7b7b648915e54c8397cd8143a7385c17eeed3104ad1236cecd905126d338a4e3",
+      "pseudo_dir": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/sssp/SSSP_1.3.0_PBE_precision",
+      "required_elements": [
+        "C",
+        "Ti",
+        "V",
+        "Zr",
+        "Nb",
+        "Ta",
+        "W"
+      ],
+      "status": "passed",
+      "verified_elements": [
+        "C",
+        "Ti",
+        "V",
+        "Zr",
+        "Nb",
+        "Ta",
+        "W"
+      ]
+    },
+    "storage": {
+      "project_volume": {
+        "exists": true,
+        "free_bytes": 28653858816,
+        "is_directory": true,
+        "minimum_free_bytes": 21474836480,
+        "path": "/Users/koiita/Downloads/ai-meterial",
+        "status": "passed",
+        "total_bytes": 245107195904,
+        "used_bytes": 216453337088,
+        "writable_and_searchable": true
+      },
+      "scratch": {
+        "exists": true,
+        "free_bytes": 28653858816,
+        "is_directory": true,
+        "minimum_free_bytes": 21474836480,
+        "path": "/private/tmp/qe_scratch",
+        "status": "passed",
+        "total_bytes": 245107195904,
+        "used_bytes": 216453337088,
+        "writable_and_searchable": true
+      }
+    }
+  },
+  "execution_policy": {
+    "mode": "mpi",
+    "mpi_launcher_required": true,
+    "mpi_ranks": 2,
+    "omp_threads": 1
+  },
+  "host": {
+    "machine_reported": "arm64",
+    "native_architecture": "arm64",
+    "platform": "macOS-15.7.7-arm64-arm-64bit"
+  },
+  "notes": [
+    "Dataset checks read only a small header and file metadata; the full MP snapshot audit is a later explicit workflow stage.",
+    "Executable hashes identify this local installation but do not replace the QE hashes captured by each executed job.",
+    "The MPI/QE interoperability probe is required only for mpi_ranks > 1 and invokes pw.x -help through one MPI rank; it supplies no QE input and performs no SCF calculation.",
+    "A ready result is an environment prerequisite, not a DFT or thermodynamic validation result."
+  ],
+  "project_root": "/Users/koiita/Downloads/ai-meterial",
+  "ready_for_qe_handoff": true,
+  "safety_mode": {
+    "dft_calculations": false,
+    "downloads": false,
+    "executable_probe_requested": true,
+    "filesystem_mutation": "optional_json_report_only",
+    "mpi_qe_interoperability_probe": "mpirun -np 1 pw.x -help (resolved executable paths)",
+    "network_access": false,
+    "probe_starts_dft_calculation": false
+  },
+  "schema_version": "qe_handoff_environment_v1",
+  "status": "ready",
+  "thresholds": {
+    "minimum_free_bytes": 21474836480,
+    "minimum_free_gib_per_project_and_scratch_volume": 20.0,
+    "probe_timeout_seconds": 5
+  },
+  "warnings": []
+}

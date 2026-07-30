@@ -1,0 +1,25 @@
+{
+  "workflow_version": "ml_only_thermal_eval_v1",
+  "candidate_count": 15,
+  "chemistry_pass_count": 15,
+  "competitive_with_best_mp_count": 4,
+  "status_counts": {
+    "competitive_with_best_mp": 4,
+    "energy_too_high": 1,
+    "missing_cif": 10
+  },
+  "thermal_formation_energy_upper_bound_ev_per_atom": -0.25,
+  "thermal_formation_energy_desirable_bound_ev_per_atom": -0.45,
+  "mp_reference_discrepancy_ev_per_atom": 0.5,
+  "audit_inputs": {
+    "validation_report_path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/reports/w_c_structural_validation_v1.json",
+    "validation_report_sha256": "b0deaa7593e781614eefdd4c1997b6845a6e0fa0a5655918fc12ca767f5ceac5",
+    "cif_search_dir": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_source_v1/jobs",
+    "cif_fallback_dir": "/Users/koiita/Downloads/ai-meterial/research/phase_2/dft_validation/candidate_cifs/w_c_structural_validation_v1",
+    "gnn_checkpoint_path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/models/gnn_formation_energy_grouped_v1.pt",
+    "gnn_checkpoint_sha256": "72bf0af9c2aae500bf5764d5588e4d64befdc7367b9e578894f7ccba3ce2d889",
+    "materials_csv_path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/data/processed/materials.csv",
+    "materials_csv_sha256": "1f68520840ae5a5c97a203e9e5ec1e4dc96f6428d4fd0e9b7242d16c2e23ca6f"
+  },
+  "scientific_limit": "Machine-learning surrogate only. Values are not Quantum ESPRESSO outputs, not audited formation-energy-above-hull, and not evidence of high-temperature performance. Run DFT on the top-ranked candidates when an HPC cluster is available."
+}

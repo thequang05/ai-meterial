@@ -1,0 +1,90 @@
+% Biên dịch bằng: xelatex competition_application_form_vi.tex
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=18mm]{geometry}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{vietnamese}
+\setmainfont{Arial}
+\setlength{\fboxrule}{0.6pt}
+\usepackage{array,tabularx,enumitem,xcolor,booktabs}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,urlcolor=blue,pdftitle={Ho so du thi AI-Materials}}
+\setlength{\parindent}{0pt}
+\setlist[itemize]{leftmargin=4mm,itemsep=1pt,topsep=2pt}
+\renewcommand{\arraystretch}{1.15}
+\newcommand{\field}[2]{\textbf{#1} & #2\\\hline}
+\newcommand{\formsection}[2]{%
+  \noindent\fcolorbox{black}{white}{\begin{minipage}[t][#1][t]{0.965\linewidth}\vspace{1mm}#2\vspace{1mm}\end{minipage}}\par\vspace{2.5mm}}
+\newcommand{\sectitle}[1]{\textbf{\large #1}\par\vspace{1.5mm}}
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+  {\Large\bfseries Cuộc thi AI-Materials\\[2mm] Hồ sơ đăng ký dự thi}\\[13mm]
+  {\LARGE\bfseries Khám phá vật liệu chịu nhiệt bằng AI}\\[3mm]
+  {\large Pipeline học máy đầu cuối để xếp hạng ứng viên gốm chịu lửa}
+\end{center}
+\vfill
+\renewcommand{\arraystretch}{1.7}
+\begin{tabularx}{0.82\linewidth}{>{\raggedright\arraybackslash}p{48mm}X}
+\hline
+\field{Tên dự án}{Khám phá vật liệu chịu nhiệt bằng AI}
+\field{Cá nhân / đội dự thi}{AI Meterial Team \quad \textit{[thay thế nếu cần]}}
+\field{Trưởng dự án}{\textit{[Bổ sung họ tên, đơn vị và thông tin liên hệ]}}
+\field{Lĩnh vực công nghệ}{AI for Science; tin học vật liệu; gốm chịu nhiệt}
+\field{Ngày nộp}{27 tháng 7 năm 2026}
+\end{tabularx}
+\vfill
+\begin{center}\small
+Hồ sơ mô tả một nguyên mẫu nghiên cứu và hỗ trợ ra quyết định.\newline
+Dự đoán ML chỉ dùng để xếp hạng ứng viên, không thay thế kiểm chứng thực nghiệm hoặc DFT.
+\end{center}
+\newpage
+
+\formsection{51mm}{
+\sectitle{1. Tổng quan dự án (bối cảnh, hiện trạng, mục tiêu và lợi thế)}
+Gốm chịu nhiệt cao và carbide chịu lửa rất quan trọng cho hệ bảo vệ nhiệt, vùng nhiệt cao của động cơ tua-bin và thiết bị năng lượng tiên tiến. Việc tìm ra công thức tốt hơn hiện còn chậm vì phải sàng lọc thủ công và lặp lại các phép tính nguyên tử tốn kém.
+
+Dự án biến một yêu cầu vật liệu bằng ngôn ngữ tự nhiên thành danh sách ứng viên có thứ hạng và có thể truy vết. Hệ thống kết nối truy hồi vật liệu, sinh công thức, tái dựng cấu trúc tinh thể, kiểm tra cấu trúc, relax bằng ML và chấm điểm so sánh với tập tham chiếu Materials Project. Mục tiêu là rút ngắn thời gian tìm ứng viên đáng để kiểm chứng khoa học tiếp theo.
+
+Lợi thế là pipeline đầu cuối có bằng chứng: mỗi ứng viên giữ lại công thức, prototype, kết quả kiểm tra cấu trúc và căn cứ xếp hạng, thay vì chỉ đưa ra một khuyến nghị không giải thích được.
+}
+\formsection{65mm}{
+\sectitle{2. Kế hoạch dự án (cách tiếp cận, chức năng chính và đầu ra)}
+\begin{itemize}
+  \item Truy hồi vật liệu hạt giống từ đồ thị tri thức theo yêu cầu người dùng.
+  \item Sinh và sàng lọc công thức theo ràng buộc hóa học; tái dựng CIF từ prototype phù hợp.
+  \item Kiểm định cấu trúc trước/sau CHGNet relax, sau đó chấm điểm bằng thermal proxy ML so với tập tham chiếu cùng hệ con.
+  \item Bàn giao pipeline tái lập được, hồ sơ ứng viên, shortlist xếp hạng, kế hoạch chạy QE/DFT và giao diện web gọn để kiểm tra.
+\end{itemize}
+Giai đoạn kiểm chứng tiếp theo dùng Quantum ESPRESSO với giả thế SSSP PBE Precision và quét hội tụ. Giai đoạn này được tách riêng khỏi xếp hạng ML để ghi nhận bằng chứng DFT mà không diễn giải quá mức dự đoán mô hình.
+}
+\formsection{50mm}{
+\sectitle{3. Đổi mới chính \& tính năng khác biệt}
+\begin{itemize}
+  \item \textbf{Từ prompt đến ứng viên:} kết hợp truy hồi ngôn ngữ tự nhiên và tìm kiếm vật liệu sinh trong một chuỗi tái lập được.
+  \item \textbf{Sàng lọc có xét cấu trúc:} công thức sinh ra được chuyển thành CIF và kiểm tra hóa học, hình học trước khi xếp hạng.
+  \item \textbf{Ranh giới độ tin cậy minh bạch:} đầu ra CHGNet/GNN được gắn nhãn là tín hiệu xếp hạng ML, không phải số liệu thực nghiệm hay DFT.
+  \item \textbf{Bàn giao có bằng chứng:} pipeline xuất artifact bất biến và kế hoạch chạy cho bước xác nhận DFT.
+\end{itemize}
+}
+\newpage
+
+\formsection{44mm}{
+\sectitle{4. Ứng dụng \& tiềm năng thị trường}
+Nền tảng phục vụ các nhóm R\&D về gốm chịu nhiệt cực cao, lớp phủ chịu lửa và linh kiện nền carbide. Người dùng tiềm năng gồm phòng thí nghiệm đại học, startup vật liệu, nhóm R\&D hàng không-vũ trụ/năng lượng và tổ chức nghiên cứu theo hợp đồng. Hệ thống không chứng nhận vật liệu; nó ưu tiên ứng viên và lưu lý do để đội ngũ dùng hiệu quả hơn năng lực phòng thí nghiệm và DFT.
+}
+\formsection{51mm}{
+\sectitle{5. Bài toán kinh doanh / chiến lược (tiếp cận thị trường, mô hình và vận hành)}
+Sản phẩm ban đầu là nền tảng hỗ trợ nghiên cứu kết hợp dịch vụ dự án: khách hàng đưa mục tiêu và ràng buộc, hệ thống tạo shortlist có thể truy vết, chuyên gia kiểm chứng một tập được chọn. Mô hình doanh thu có thể kết hợp thuê bao workspace, phí chạy chiến dịch, tích hợp dữ liệu riêng và hỗ trợ kiểm chứng DFT.
+
+Con đường tiếp cận thị trường bắt đầu bằng pilot với nhóm nghiên cứu gốm và vật liệu chịu lửa. Mỗi pilot đo thời gian tạo shortlist, số ứng viên được đưa tới mô phỏng và độ phù hợp giữa thứ hạng ML với bằng chứng theo sau. Vận hành luôn có con người trong vòng lặp: chuyên gia duyệt ràng buộc, kiểm tra artifact và quyết định ứng viên nào đi tiếp.
+}
+\formsection{51mm}{
+\sectitle{6. Thông tin bổ sung (quy trình R\&D và bài học kinh nghiệm)}
+Nguyên mẫu đã thực hiện chiến dịch W--C carbide chịu lửa, bao gồm sinh ứng viên, kiểm định cấu trúc, CHGNet relax và đánh giá thermal bằng ML. Môi trường Quantum ESPRESSO 7.5 native cùng manifest giả thế SSSP 1.3.0 đã được chuẩn bị cho tầng bằng chứng tiếp theo.
+
+Bài học cốt lõi là độ tin cậy khoa học phụ thuộc vào việc bảo toàn bất định. Vì vậy sản phẩm phân biệt rõ giả thuyết được sinh, ứng viên được ML xếp hạng, công việc DFT đã chuẩn bị, bằng chứng DFT đã hoàn thành và kiểm chứng thực nghiệm. Thiết kế theo tầng này giúp kết quả hữu ích ngay hôm nay nhưng vẫn phù hợp với bằng chứng thực có.
+}
+\vfill
+\begin{center}\small AI Meterial Team --- Hồ sơ đăng ký dự thi --- Bản tiếng Việt\end{center}
+\end{document}

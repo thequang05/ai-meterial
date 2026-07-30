@@ -49,16 +49,49 @@ def _inspect_upf_header(path: Path, expected_symbol: str) -> dict[str, str]:
         match = re.search(
             rf"\b{name}\s*=\s*['\"]\s*([^'\"]+?)\s*['\"]", text, re.I
         )
-        if not match:
-            raise ValueError(f"UPF header has no parseable {name}: {path.name}")
-        attributes[name] = match.group(1).strip()
+        if match:
+            attributes[name] = match.group(1).strip()
+
+    # SSSP deliberately includes both UPF v2 XML headers and legacy UPF v1
+    # headers.  The latter store annotated, fixed-order text fields instead of
+    # XML attributes, so parse their explicit labels without weakening the
+    # element/functional/relativity checks below.
+    if "element" not in attributes:
+        match = re.search(r"(?m)^\s*([A-Za-z]{1,2})\s+Element\s*$", text)
+        if match:
+            attributes["element"] = match.group(1).strip()
+    if "functional" not in attributes:
+        match = re.search(
+            r"(?mi)^\s*(.*?)\s+Exchange-Correlation functional\s*$", text
+        )
+        if match:
+            attributes["functional"] = match.group(1).strip()
+    if "relativistic" not in attributes and re.search(
+        r"Scalar[- ]Relativistic Calculation", text, re.I
+    ):
+        attributes["relativistic"] = "scalar-relativistic"
+    missing = [
+        name for name in ("element", "functional", "relativistic")
+        if name not in attributes
+    ]
+    if missing:
+        raise ValueError(
+            f"UPF header has no parseable {','.join(missing)}: {path.name}"
+        )
     if attributes["element"].title() != expected_symbol:
         raise ValueError(
             f"UPF element mismatch for {expected_symbol}: "
             f"header={attributes['element']!r}, file={path.name}"
         )
     functional = re.sub(r"[^A-Z0-9]", "", attributes["functional"].upper())
-    if functional not in PBE_FUNCTIONAL_HEADER_ALIASES:
+    functional_tokens = {
+        re.sub(r"[^A-Z0-9]", "", token.upper())
+        for token in attributes["functional"].split()
+    }
+    if (
+        functional not in PBE_FUNCTIONAL_HEADER_ALIASES
+        and "PBE" not in functional_tokens
+    ):
         raise ValueError(
             f"UPF for {expected_symbol} is not explicitly PBE: "
             f"functional={attributes['functional']!r}"
@@ -124,8 +157,16 @@ def create_manifest(
         if not source.is_file():
             raise FileNotFoundError(source)
 
-        cutoff = float(entry["cutoff"])
-        if "dual" in entry:
+        cutoff_value = entry.get("cutoff", entry.get("cutoff_wfc"))
+        if cutoff_value is None:
+            raise ValueError(
+                f"SSSP metadata has neither cutoff nor cutoff_wfc for {symbol}"
+            )
+        cutoff = float(cutoff_value)
+        if "cutoff_rho" in entry:
+            ecutrho = float(entry["cutoff_rho"])
+            dual = ecutrho / cutoff
+        elif "dual" in entry:
             dual = float(entry["dual"])
             ecutrho = cutoff * dual
         elif "ecutrho" in entry:

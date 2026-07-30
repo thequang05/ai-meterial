@@ -1,0 +1,160 @@
+{
+  "runner_version": "qe_sequential_runner_v1",
+  "status": "execution_finished_requires_collection",
+  "execute_requested": true,
+  "jobs": [
+    {
+      "entry_id": "convergence:cv_camp_41a80c8b8b30_cutoff_00_adc7c6fb1c",
+      "entry_role": "convergence",
+      "source_id": "camp_41a80c8b8b30",
+      "candidate_id": "cv_camp_41a80c8b8b30_cutoff_00_adc7c6fb1c",
+      "rank": 1,
+      "formula": "Ti3NbWC5",
+      "job_dir": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_sweep_v1/jobs/001_cv_camp_41a80c8b8b30_cutoff_00_adc7c6fb1c",
+      "input": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_sweep_v1/jobs/001_cv_camp_41a80c8b8b30_cutoff_00_adc7c6fb1c/convergence-scf.in",
+      "output": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_sweep_v1/jobs/001_cv_camp_41a80c8b8b30_cutoff_00_adc7c6fb1c/convergence-scf.out",
+      "record": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_sweep_v1/jobs/001_cv_camp_41a80c8b8b30_cutoff_00_adc7c6fb1c/convergence_run.json",
+      "qe_scratch_outdir": "/private/tmp/qe_scratch/qe_pbe_convergence_sweep_v1/campaign_21b126df4170d1e9/001_cv_camp_41a80c8b8b30_cutoff_00_adc7c6fb1c",
+      "command": [
+        "/opt/homebrew/Cellar/open-mpi/5.0.9/bin/mpirun",
+        "-np",
+        "2",
+        "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/bin/pw.x",
+        "-in",
+        "convergence-scf.in"
+      ],
+      "preflight_blockers": [],
+      "qe_input_sha256": "7475972cf6ede4b69ff210fe33459aa7f781b7ce2f5aa17357a2d5c43c8ae34a",
+      "run_status": "process_failed",
+      "return_code": 1,
+      "timed_out": false,
+      "timeout_cleanup": "not_needed",
+      "attempt_id": "1784037353908896000",
+      "attempt_record": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_sweep_v1/jobs/001_cv_camp_41a80c8b8b30_cutoff_00_adc7c6fb1c/attempts/attempt_1784037353908896000.json",
+      "elapsed_seconds": 3297.0200431346893,
+      "qe_output_summary": {
+        "output_exists": true,
+        "job_done": false,
+        "electronic_convergence_failed": false,
+        "ionic_converged_marker": false,
+        "fatal_error_detected": false,
+        "fatal_error_patterns": [],
+        "total_energy_ry": null,
+        "total_force_ry_per_bohr": null,
+        "pressure_kbar": null,
+        "scf_cycle_count": 0,
+        "last_scf_iteration_count": null,
+        "program_version": "7.5"
+      },
+      "qe_output_sha256": "51795623b877a2ffd11659554d130dfc0bd79b33bbde7e264f197543a646adc6",
+      "qe_program_version": "7.5",
+      "preflight_sha256": "f69076fc4c8a2973eaa010ee668d1ca31297bc958b6a04fc48318f369aebaf16",
+      "queue_manifest_sha256": "d999d8c620eef4a7d214e1211f5c6f0bb3ee091f988293062fb51b98f8ead8ce",
+      "preflight_settings_hash": "5a6fb6f530b423b7a7895c58e5e4dce671e0cdce4355ee77a45692b4dddd7212",
+      "pw_executable": "/Users/koiita/Downloads/ai-meterial/.conda/qe-native-7.5/bin/pw.x",
+      "pw_executable_sha256": "0b5f4bcdef7b7830b0aaec1ec2feac9b41544212bda7ed5263ce9c6efce425f3",
+      "execution_provenance": {
+        "execution_mode": "mpi",
+        "mpi_ranks": 2,
+        "omp_threads": 1,
+        "mpi_launcher_path": "/opt/homebrew/Cellar/open-mpi/5.0.9/bin/mpirun",
+        "mpi_launcher_sha256": "9959a47f45dc84299928bf2d82d46199635f945eb590e01cc99840ce5809948d",
+        "mpi_program_version": "mpirun (Open MPI) 5.0.9"
+      },
+      "disk_space_gate": {
+        "status": "passed",
+        "passed": true,
+        "minimum_free_bytes_per_filesystem": 5368709120,
+        "minimum_free_gib_per_filesystem": 5.0,
+        "observations": [
+          {
+            "label": "project_job_filesystem",
+            "requested_path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_sweep_v1/jobs/001_cv_camp_41a80c8b8b30_cutoff_00_adc7c6fb1c",
+            "minimum_free_bytes": 5368709120,
+            "minimum_free_gib": 5.0,
+            "sufficient": true,
+            "checked_path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_sweep_v1/jobs/001_cv_camp_41a80c8b8b30_cutoff_00_adc7c6fb1c",
+            "filesystem_device_id": 16777231,
+            "total_bytes": 245107195904,
+            "used_bytes": 216426594304,
+            "free_bytes": 28680601600,
+            "free_gib": 26.710891723632812,
+            "check_error": null
+          },
+          {
+            "label": "qe_scratch_filesystem",
+            "requested_path": "/private/tmp/qe_scratch/qe_pbe_convergence_sweep_v1/campaign_21b126df4170d1e9/001_cv_camp_41a80c8b8b30_cutoff_00_adc7c6fb1c",
+            "minimum_free_bytes": 5368709120,
+            "minimum_free_gib": 5.0,
+            "sufficient": true,
+            "checked_path": "/private/tmp/qe_scratch/qe_pbe_convergence_sweep_v1/campaign_21b126df4170d1e9/001_cv_camp_41a80c8b8b30_cutoff_00_adc7c6fb1c",
+            "filesystem_device_id": 16777231,
+            "total_bytes": 245107195904,
+            "used_bytes": 216426594304,
+            "free_bytes": 28680601600,
+            "free_gib": 26.710891723632812,
+            "check_error": null
+          }
+        ],
+        "checked_unix_time": 1784037353.9088929
+      }
+    }
+  ],
+  "dft_validated_count": 0,
+  "execution_provenance": {
+    "execution_mode": "mpi",
+    "mpi_ranks": 2,
+    "omp_threads": 1,
+    "mpi_launcher_path": "/opt/homebrew/Cellar/open-mpi/5.0.9/bin/mpirun",
+    "mpi_launcher_sha256": "9959a47f45dc84299928bf2d82d46199635f945eb590e01cc99840ce5809948d",
+    "mpi_program_version": "mpirun (Open MPI) 5.0.9"
+  },
+  "disk_space_policy": {
+    "minimum_free_gib_per_project_and_scratch_filesystem": 5.0,
+    "check_timing": "immediately_before_each_actual_launch"
+  },
+  "disk_space_checks": [
+    {
+      "candidate_id": "cv_camp_41a80c8b8b30_cutoff_00_adc7c6fb1c",
+      "run_status": "process_failed",
+      "disk_space_gate": {
+        "status": "passed",
+        "passed": true,
+        "minimum_free_bytes_per_filesystem": 5368709120,
+        "minimum_free_gib_per_filesystem": 5.0,
+        "observations": [
+          {
+            "label": "project_job_filesystem",
+            "requested_path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_sweep_v1/jobs/001_cv_camp_41a80c8b8b30_cutoff_00_adc7c6fb1c",
+            "minimum_free_bytes": 5368709120,
+            "minimum_free_gib": 5.0,
+            "sufficient": true,
+            "checked_path": "/Users/koiita/Downloads/ai-meterial/research/phase_2/generation/output/w_c_dft_campaign_v1/convergence_sweep_v1/jobs/001_cv_camp_41a80c8b8b30_cutoff_00_adc7c6fb1c",
+            "filesystem_device_id": 16777231,
+            "total_bytes": 245107195904,
+            "used_bytes": 216426594304,
+            "free_bytes": 28680601600,
+            "free_gib": 26.710891723632812,
+            "check_error": null
+          },
+          {
+            "label": "qe_scratch_filesystem",
+            "requested_path": "/private/tmp/qe_scratch/qe_pbe_convergence_sweep_v1/campaign_21b126df4170d1e9/001_cv_camp_41a80c8b8b30_cutoff_00_adc7c6fb1c",
+            "minimum_free_bytes": 5368709120,
+            "minimum_free_gib": 5.0,
+            "sufficient": true,
+            "checked_path": "/private/tmp/qe_scratch/qe_pbe_convergence_sweep_v1/campaign_21b126df4170d1e9/001_cv_camp_41a80c8b8b30_cutoff_00_adc7c6fb1c",
+            "filesystem_device_id": 16777231,
+            "total_bytes": 245107195904,
+            "used_bytes": 216426594304,
+            "free_bytes": 28680601600,
+            "free_gib": 26.710891723632812,
+            "check_error": null
+          }
+        ],
+        "checked_unix_time": 1784037353.9088929
+      }
+    }
+  ],
+  "scientific_limit": "Process completion alone is not DFT validation. Collect final structures, convergence metrics, and consistent static energies next."
+}
